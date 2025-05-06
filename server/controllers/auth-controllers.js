@@ -1,0 +1,95 @@
+const User = require('../models/User');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
+const userRegister = async(req, res) => {
+    try {
+        const {nameSurname, username, password} = req.body;
+
+        const userExists = await User.findOne({username});
+        if(userExists){
+            return res.status(401).json({
+                success: false,
+                message: 'User with that username already exists'
+            })
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        const newUser = new User({
+            nameSurname: nameSurname,
+            username: username,
+            password: hashedPassword,
+        });
+
+        await newUser.save();
+
+        if(newUser){
+            res.status(200).json({
+                success: true,
+                message: 'User registered successfully',
+                data: newUser
+            })
+        }else{
+            res.status(400).json({
+                success: false,
+                message: 'User could not be created'
+            })
+        }
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Something went wrong',
+        })
+    }
+}
+
+const userLogin = async(req, res) => {
+    try {
+        const {username, password} = req.body;
+        const user = await User.findOne({username});
+        if(!user){
+            return res.status(404).json({
+                success: false,
+                message: 'User with that username does not exist'
+            })
+        }
+
+        const passwordsMatch = await bcrypt.compare(password, user.password);
+        if(!passwordsMatch){
+            return res.status(404).json({
+                success: false,
+                message: 'Incorrect password'
+            })
+        }
+
+        const token = jwt.sign({
+            id: user._id,
+            nameSurname: user.nameSurname,
+            username: user.username,
+        }, process.env.JWT_TOKEN,{
+            expiresIn: '1h'
+        });
+
+        res.status(200).json({
+            success: true, 
+            message: 'user logged in successfully',
+            data: user,
+            token: token
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: 'Something went wrong',
+        })
+    }
+}
+
+module.exports = {
+    userRegister,
+    userLogin,
+}
