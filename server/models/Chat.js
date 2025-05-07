@@ -18,7 +18,11 @@ const ChatSchema = new mongoose.Schema({
     admins: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-    }]
+    }],
+    backgroundImage: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ChatImage',
+    }
 }, {timestamps: true});
 
 module.exports = mongoose.model('Chat', ChatSchema);
