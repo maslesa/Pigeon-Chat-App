@@ -1,5 +1,6 @@
 import { useState } from "react"
 import axios from 'axios';
+import Alert from "./Alert";
 
 export default function NewChat({onChatCreated}){
 
@@ -8,19 +9,31 @@ export default function NewChat({onChatCreated}){
 
     const [title, setTitle] = useState('');
 
+    const [alert, setAlert] = useState(null);
+
     const createChat = async() => {
         try {
+            if(title.length < 3){
+                setAlert({ message: "Chat title must have at least 3 chars!", isError: true, duration: 2000 });
+                return;
+            }
             await axios.post(`http://localhost:5000/chat/create`, {title}, axiosConfig);
-            console.log('chat created successfully');
             if(onChatCreated) onChatCreated();
         } catch (error) {
-            console.log(error);
-            
+            setAlert({ message: "Error creating new chat!", isError: true, duration: 2000 });
         }
     }
 
     return(
         <div onClick={(e) => e.stopPropagation()} className="w-1/3 h-1/3 bg-myback2 rounded-3xl flex flex-col shadow-2xl">
+            {alert && (
+                <Alert
+                message={alert.message}
+                isError={alert.isError}
+                duration={alert.duration}
+                onClose={() => setAlert(null)}
+                />
+            )}
             <div className="w-full flex justify-center items-center p-8 gap-1">
                 <img className="w-10" src="/group.png" alt="" />
                 <p className="font-roboto font-semibold text-2xl text-white">Create new chat</p>
