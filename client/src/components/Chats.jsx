@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from 'axios';
+import NewChat from "./NewChat";
 
 export default function Chats(){
 
@@ -7,6 +8,7 @@ export default function Chats(){
     const axiosConfig = { headers: { Authorization : `Bearer ${token}` }}
 
     const [chats, setChats] = useState([]);
+    const [newChatDialog, setNewChatDialog] = useState(false);
 
     const fetchChats = async() => {
         const res = await axios.get(`http://localhost:5000/chat/fetch-all`, axiosConfig);
@@ -19,13 +21,21 @@ export default function Chats(){
 
     return(
         <div className="w-2/7 h-full flex flex-col items-center bg-myback shadow-2xl">
-            <div className="w-full flex justify-between items-end p-5 font-roboto font-bold text-3xl text-white"> 
+            {newChatDialog && (
+                <div onClick={() => setNewChatDialog(false)} className="absolute flex justify-center items-center top-0 left-0 w-screen h-screen bg-black50 z-50">
+                    <NewChat onChatCreated={() => {
+                        fetchChats();
+                        setNewChatDialog(false);
+                    }}/>
+                </div>
+            )}
+            <div className="w-full flex justify-between items-end p-5 font-roboto font-bold text-2xl text-white"> 
                 <div className="flex gap-3 justify-center items-center">
                     <img className="w-5 cursor-pointer duration-200 ease-in-out hover:scale-105" src="/menu.png" alt="" />
                     <p>Chats</p>
                 </div>
                 <div className="flex gap-3">
-                    <div className="cursor-pointer duration-200 ease-in-out hover:scale-105">
+                    <div onClick={() => setNewChatDialog(true)} className="cursor-pointer duration-200 ease-in-out hover:scale-105">
                         <img className="w-7" src="/group.png" alt="group" />
                     </div>
                     <div className="cursor-pointer duration-200 ease-in-out hover:scale-105">
