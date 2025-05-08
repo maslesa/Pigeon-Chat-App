@@ -50,7 +50,8 @@ const chatFetchAll = async(req, res) => {
         if(chats.length === 0){
             return res.status(200).json({
                 success: true,
-                message: 'No chats found'
+                message: 'No chats found',
+                chats: []
             })
         }
 
