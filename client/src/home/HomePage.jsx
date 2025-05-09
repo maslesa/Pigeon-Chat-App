@@ -9,7 +9,7 @@ export default function HomePage(){
     return(
         <div className="w-screen h-screen bg-myback2 flex flex-col justify-baseline items-center">
             <div className="w-full flex-1 flex justify-baseline bg-myback2">
-                <Chats setSelectedChat={setSelectedChat}/>
+                <Chats selectedChat={selectedChat} setSelectedChat={setSelectedChat}/>
                 <Chat selectedChat={selectedChat}/>
             </div>
         </div>

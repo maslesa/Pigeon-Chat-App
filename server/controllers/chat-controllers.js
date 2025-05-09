@@ -1,4 +1,5 @@
 const Chat = require('../models/Chat');
+const Message = require('../models/Message');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 
@@ -114,10 +115,44 @@ const chatJoin = async(req, res) => {
     }
 }
 
+const sentMessage = async(req, res) => {
+    try {
+        const userId = req.userInfo.id; 
+        const {message} = req.body;
+        const chatId = req.params.chatId;
+    
+        const newMessage = await Message.create({
+            body: message,
+            sentBy: userId,
+            chat: chatId,
+        });
+
+        await Chat.findByIdAndUpdate(
+            chatId,
+            {$push : { messages  : newMessage._id}}
+        )
+
+        res.status(200).json({
+            success: true,
+            message: 'Message has been sent successfully',
+            data: newMessage,
+        })
+
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: 'Something went wrong',
+        })
+    }
+}
+
 
 
 module.exports = {
     chatCreate,
     chatFetchAll,
-    chatJoin
+    chatJoin,
+    sentMessage,
 }

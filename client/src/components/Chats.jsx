@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from 'axios';
 import NewChat from "./NewChat";
 
-export default function Chats({ setSelectedChat }){
+export default function Chats({ selectedChat, setSelectedChat }){
 
     const token = localStorage.getItem('token');
     const axiosConfig = { headers: { Authorization : `Bearer ${token}` }}
@@ -47,8 +47,8 @@ export default function Chats({ setSelectedChat }){
                 {chats && chats.length > 0 ? (
                     chats.map((chat) => {
                         return(
-                            <div onClick={() => setSelectedChat(chat)} key={chat._id} className="w-full h-21 flex items-center pl-3 gap-3 duration-200 ease-in-out cursor-pointer
-                                                        hover:bg-black50 rounded-2xl">
+                            <div onClick={() => setSelectedChat(chat)} key={chat._id} className={`w-full h-21 flex items-center pl-3 gap-3 duration-200 ease-in-out cursor-pointer
+                                                         rounded-2xl  ${selectedChat && selectedChat._id === chat._id ? 'bg-myback2' : 'hover:bg-black50'}`}>
                                 <div className="w-15 h-15 bg-white flex justify-center items-center rounded-full">
                                     {chat.backgroundImage ? (
                                         <div>
