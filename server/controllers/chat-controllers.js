@@ -2,6 +2,7 @@ const Chat = require('../models/Chat');
 const Message = require('../models/Message');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
+const { createMessage } = require('./message-controller');
 
 function generatePasscode(length = 8) {
     return crypto.randomBytes(length).toString('hex').slice(0, length);
@@ -115,22 +116,13 @@ const chatJoin = async(req, res) => {
     }
 }
 
-const sentMessage = async(req, res) => {
+const sendMessage = async(req, res) => {
     try {
         const userId = req.userInfo.id; 
         const {message} = req.body;
         const chatId = req.params.chatId;
     
-        const newMessage = await Message.create({
-            body: message,
-            sentBy: userId,
-            chat: chatId,
-        });
-
-        await Chat.findByIdAndUpdate(
-            chatId,
-            {$push : { messages  : newMessage._id}}
-        )
+        const newMessage = await createMessage({chatId, userId, message});
 
         res.status(200).json({
             success: true,
@@ -154,5 +146,5 @@ module.exports = {
     chatCreate,
     chatFetchAll,
     chatJoin,
-    sentMessage,
+    sendMessage,
 }
