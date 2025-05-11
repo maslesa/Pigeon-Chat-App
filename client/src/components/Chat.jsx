@@ -1,22 +1,37 @@
 import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
+import axios from 'axios';
 
 const socket = io('http://localhost:5000');
 
 export default function Chat({selectedChat}){
+
+    const token = localStorage.getItem('token');
+    const axiosConfig = { headers: { Authorization : `Bearer ${token}` }}
 
     const user = JSON.parse(localStorage.getItem('user'));
 
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState([]);
 
+    const fetchPreviousChatMessages = async() => {
+        const previousMessages = await axios.get(`http://localhost:5000/chat/get-messages/${selectedChat._id}`, axiosConfig);
+        setMessages(previousMessages.data.messages);
+    }
+
+    useEffect(() => {
+        const container = document.querySelector('.custom-scrollbar');
+        if (container) container.scrollTop = container.scrollHeight;
+    }, [messages]);
+
     useEffect(() => {
         if (!selectedChat) return;
 
-        socket.emit('joinRoom', selectedChat._id); // Join chat room
+        fetchPreviousChatMessages();
+
+        socket.emit('joinRoom', selectedChat._id);
 
         socket.on('receiveMessage', (msg) => {
-            console.log('Received:', msg);
             setMessages(prev => [...prev, msg]);
         });
 
@@ -39,7 +54,7 @@ export default function Chat({selectedChat}){
         <>
         {selectedChat && (
             <>
-            <div className="flex flex-col flex-1 bg-myback2 justify-baseline items-center">
+            <div className="flex flex-col max-h-screen flex-1 bg-myback2 justify-baseline items-center relative">
                 <div className="w-full h-21 bg-myback flex gap-3 items-center justify-baseline pl-10 pr-10 shadow-lg">
                     <div className="w-15 h-15 bg-white flex justify-center items-center rounded-full">
                         {selectedChat.backgroundImage ? (
@@ -61,38 +76,38 @@ export default function Chat({selectedChat}){
                         }</div>
                     </div>
                 </div>
-                <div className="w-full h-4/5">
-                <div className="p-4 flex flex-col gap-2 overflow-y-auto h-full">
-    {messages.map((msg) => {
-        const isMe = msg.sentBy._id === user._id;
-        return (
-            <div
-                key={msg._id}
-                className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
-            >
-                <div
-                    className={`
-                        max-w-xs px-4 py-2 rounded-2xl text-white text-sm shadow
-                        ${isMe ? 'bg-blue-600 rounded-br-none' : 'bg-gray-700 rounded-bl-none'}
-                    `}
-                >
-                    <div className="font-medium">
-                        {!isMe && <span>{msg.sentBy.username}</span>}
-                    </div>
-                    <div>{msg.body}</div>
-                </div>
-            </div>
-        );
-    })}
-</div>
-
+                <div className="w-full h-6/7 overflow-y-hidden">
+                    <div className="p-4 flex flex-col gap-2 overflow-y-auto h-full custom-scrollbar">
+                        {messages.map((msg) => {
+                            const isMe = msg.sentBy._id === user._id;
+                            return (
+                                <div key={msg._id} className={`flex items-end ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                    {!isMe && 
+                                    <div className='w-10 h-10 bg-white rounded-full mr-2 flex justify-center items-center font-roboto font-bold text-lg'> 
+                                        {msg.sentBy.username.charAt(0).toUpperCase()}
+                                    </div>}
+                                    <div className={`max-w-xs px-4 py-2 rounded-2xl text-white text-sm shadow ${isMe ? 'bg-blue-600 rounded-br-none' : 'bg-gray-700 rounded-bl-none'}`}>
+                                        <div className="font-medium">
+                                            {!isMe && <span>{msg.sentBy.username}</span>}
+                                        </div>
+                                        <div className='mt-1'>{msg.body}</div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>   
                 </div>
                 <div className="w-full h-1/7 flex gap-5 justify-center items-center">
                         <input className="w-2/3 h-1/2 border-2 border-white rounded-xl outline-0
                                             font-roboto pl-5 items-center text-white" 
                                 autoComplete="off" type="text" placeholder="Enter a message"
                                 value={message}
-                                onChange={e => setMessage(e.target.value)} />
+                                onChange={e => setMessage(e.target.value)}
+                                onKeyDown={e => {
+                                    if (e.key === 'Enter') {
+                                        sendMessage();
+                                    }
+                                }} />
                         <div onClick={sendMessage} className="cursor-pointer duration-200 ease-in-out hover:scale-110">
                             <img className="w-7" src="/send.png" alt="" />
                         </div>
