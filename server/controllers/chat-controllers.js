@@ -47,7 +47,15 @@ const chatFetchAll = async(req, res) => {
     try {
         const userId = req.userInfo.id;
 
-        const chats = await Chat.find({members: userId});
+        const chats = await Chat.find({members: userId})
+                                .populate({
+                                    path: 'messages',
+                                    select: 'body createdAt sentBy',
+                                    populate: {
+                                        path: 'sentBy',
+                                       select: 'username _id'
+                                    }
+                                });
 
         if(chats.length === 0){
             return res.status(200).json({

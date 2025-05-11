@@ -33,6 +33,9 @@ export default function Chat({selectedChat}){
 
         socket.on('receiveMessage', (msg) => {
             setMessages(prev => [...prev, msg]);
+            if (typeof window.updateChatList === 'function') {
+                window.updateChatList();
+            }
         });
 
         return () => {
@@ -55,14 +58,14 @@ export default function Chat({selectedChat}){
         {selectedChat && (
             <>
             <div className="flex flex-col max-h-screen flex-1 bg-myback2 justify-baseline items-center relative">
-                <div className="w-full h-21 bg-myback flex gap-3 items-center justify-baseline pl-10 pr-10 shadow-lg">
-                    <div className="w-15 h-15 bg-white flex justify-center items-center rounded-full">
+                <div className="w-full h-20 bg-myback flex gap-3 items-center justify-baseline pl-10 pr-10 shadow-lg">
+                    <div className="w-12 h-12 bg-white flex justify-center items-center rounded-full">
                         {selectedChat.backgroundImage ? (
                             <div>
                                 SL
                             </div>
                         ) : (
-                            <img className="w-7" src="group-chat.png" alt="" />
+                            <img className="w-5" src="group-chat.png" alt="" />
                         )}
                     </div>
                     <div className="flex flex-col h-15 justify-baseline font-roboto font-normal pt-1 text-white text-xl">
@@ -86,11 +89,16 @@ export default function Chat({selectedChat}){
                                     <div className='w-10 h-10 bg-white rounded-full mr-2 flex justify-center items-center font-roboto font-bold text-lg'> 
                                         {msg.sentBy.username.charAt(0).toUpperCase()}
                                     </div>}
-                                    <div className={`max-w-xs px-4 py-2 rounded-2xl text-white text-sm shadow ${isMe ? 'bg-blue-600 rounded-br-none' : 'bg-gray-700 rounded-bl-none'}`}>
+                                    <div className={`relative min-w-[150px] max-w-xs px-4 py-2 pr-20 rounded-2xl text-white text-sm shadow ${isMe ? 'bg-blue-600 rounded-br-none' : 'bg-gray-700 rounded-bl-none'}`}>
                                         <div className="font-medium">
                                             {!isMe && <span>{msg.sentBy.username}</span>}
                                         </div>
-                                        <div className='mt-1'>{msg.body}</div>
+                                        <div className='mt-1'>
+                                            {msg.body}
+                                        </div>
+                                        <div className={`absolute bottom-1 right-3 text-white font-roboto text-[10px] opacity-80`}>
+                                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </div>
                                     </div>
                                 </div>
                             );
@@ -98,8 +106,11 @@ export default function Chat({selectedChat}){
                     </div>   
                 </div>
                 <div className="w-full h-1/7 flex gap-5 justify-center items-center">
+                        <div className="cursor-pointer duration-200 ease-in-out hover:scale-110">
+                            <img className="w-5" src="/link.png" alt="" />
+                        </div>
                         <input className="w-2/3 h-1/2 border-2 border-white rounded-xl outline-0
-                                            font-roboto pl-5 items-center text-white" 
+                                            font-roboto pl-5 pr-5 items-center text-white" 
                                 autoComplete="off" type="text" placeholder="Enter a message"
                                 value={message}
                                 onChange={e => setMessage(e.target.value)}

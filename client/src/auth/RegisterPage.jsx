@@ -52,19 +52,19 @@ export default function RegisterPage(){
                     <div className="w-full flex gap-3 items-center justify-center">
                         <label className="cursor-pointer font-roboto font-semibold text-xl text-white" htmlFor="fullname">Full name:</label>
                         <input id="fullname" autoComplete="off" type="text" 
-                                className="outline-0 border-3 border-white font-roboto font-semibold p-1 flex-1 rounded-lg pl-3"
+                                className="outline-0 border-3 border-white font-roboto font-semibold p-1 flex-1 rounded-lg pl-3 text-white"
                                 onChange={(e) => setFullname(e.target.value)} />
                     </div>
                     <div className="w-full flex gap-3 items-center justify-center">
                         <label className="cursor-pointer font-roboto font-semibold text-xl text-white" htmlFor="username">Username:</label>
                         <input id="username" autoComplete="off" type="text" 
-                                className="outline-0 border-3 border-white font-roboto font-semibold p-1 w-full rounded-lg pl-3"
+                                className="outline-0 border-3 border-white font-roboto font-semibold p-1 w-full rounded-lg pl-3 text-white"
                                 onChange={(e) => setUsername(e.target.value)} />
                     </div>
                     <div className="w-full flex gap-3 items-center justify-center">
                         <label className="cursor-pointer font-roboto font-semibold text-xl text-white" htmlFor="password">Password:</label>
                         <input id="password" autoComplete="off" type="password" 
-                                className="outline-0 border-3 border-white font-roboto font-semibold p-1 w-full rounded-lg pl-3" 
+                                className="outline-0 border-3 border-white font-roboto font-semibold p-1 w-full rounded-lg pl-3 text-white" 
                                 onChange={(e) => setPassword(e.target.value)}/>
                     </div>
                     <div className="w-full flex items-center justify-end">

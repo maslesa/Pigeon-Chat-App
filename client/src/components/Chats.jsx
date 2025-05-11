@@ -12,8 +12,26 @@ export default function Chats({ selectedChat, setSelectedChat }){
 
     const fetchChats = async() => {
         const res = await axios.get(`http://localhost:5000/chat/fetch-all`, axiosConfig);
-        setChats(res.data.chats);
+
+        const sortedChats = res.data.chats.sort((a, b) => {
+        const lastMsgA = a.messages[a.messages.length - 1];
+        const lastMsgB = b.messages[b.messages.length - 1];
+
+        const dateA = lastMsgA ? new Date(lastMsgA.createdAt) : new Date(0);
+        const dateB = lastMsgB ? new Date(lastMsgB.createdAt) : new Date(0);
+
+        return dateB - dateA;
+    });
+
+        setChats(sortedChats);
     }
+
+    useEffect(() => {
+        window.updateChatList = fetchChats;
+        return () => {
+            window.updateChatList = null;
+        }
+    }, []);
 
     useEffect(() => {
         fetchChats();
@@ -49,17 +67,22 @@ export default function Chats({ selectedChat, setSelectedChat }){
                         return(
                             <div onClick={() => setSelectedChat(chat)} key={chat._id} className={`w-full h-21 flex items-center pl-3 gap-3 duration-200 ease-in-out cursor-pointer
                                                          rounded-2xl  ${selectedChat && selectedChat._id === chat._id ? 'bg-myback2' : 'hover:bg-black50'}`}>
-                                <div className="w-15 h-15 bg-white flex justify-center items-center rounded-full">
+                                <div className="min-w-13 h-13 bg-white flex justify-center items-center rounded-full">
                                     {chat.backgroundImage ? (
                                         <div>
                                             SL
                                         </div>
                                     ) : (
-                                        <img className="w-7" src="group-chat.png" alt="" />
+                                        <img className="w-5" src="group-chat.png" alt="" />
                                     )}
                                 </div>
-                                <div className="flex flex-col h-15 justify-baseline font-roboto font-normal text-white">
-                                    <p>{chat.title}</p>
+                                <div className="w-full flex flex-col h-15 justify-center font-roboto font-normal text-white pr-3">
+                                    <div className="flex justify-between items-center">
+                                        <p>{chat.title}</p>
+                                        <p className="text-xs ">{chat.messages[chat.messages.length - 1] && new Date(chat.messages[chat.messages.length - 1].createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                    </div>
+                                    <p className="text-sm opacity-80 truncate max-w-[12rem]">
+                                        {chat.messages && chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].body: 'No messages yet'}</p>
                                 </div>
                             </div>
                         )
