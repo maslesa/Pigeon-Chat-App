@@ -22,6 +22,7 @@ export default function Chat({ selectedChat }) {
     };
 
     const [invitationDialog, setInvitationDialog] = useState(false);
+    const [moreOptions, setMoreOptions] = useState(false);
 
     const messagesEndRef = useRef(null);
 
@@ -127,12 +128,13 @@ export default function Chat({ selectedChat }) {
                                 </div>
                             </div>
                         </div>
-                        <div className='w-50 flex justify-end items-center relative'>
-                            <div onClick={() => setInvitationDialog(!invitationDialog)} className='flex justify-center items-center w-10 h-10 cursor-pointer duration-200 ease-in-out hover:bg-myback2 rounded-full'>
+                        <div className='w-50 flex gap-2 justify-end items-center relative'>
+                            <div onClick={() => {setInvitationDialog(!invitationDialog); setMoreOptions(false);}} 
+                                    className={`flex justify-center items-center w-10 h-10 cursor-pointer duration-200 ease-in-out hover:bg-myback2 rounded-full ${invitationDialog && 'bg-myback250'}`}>
                                 <img className='w-5' src="/invite.png" alt="invite" />
                             </div>
                             {invitationDialog && (
-                                <div className='absolute p-5 flex flex-col gap-5 justify-center items-center font-roboto text-white top-15 right-15 w-100 h-35 bg-myback border-4 border-myback2 rounded-2xl rounded-tr-none z-100'>
+                                <div className='absolute p-5 flex flex-col gap-5 justify-center items-center font-roboto text-white top-22 right-0 w-100 h-35 bg-myback border-4 border-myback2 rounded-2xl z-100'>
                                     <div className='w-full flex justify-center items-center gap-2'>
                                         <img className='w-4' src="/invlink.png" alt="invlink" />
                                         <p className='text-lg font-semibold'>Invitation credentials</p>
@@ -144,9 +146,26 @@ export default function Chat({ selectedChat }) {
                                     </div>
                                 </div>
                             )}
-                            <div className='flex justify-center items-center w-10 h-10 cursor-pointer duration-200 ease-in-out hover:bg-myback2 rounded-full'>
-                                <img className='w-5' src="/more.png" alt="more" />
+                            <div onClick={() => {setMoreOptions(!moreOptions); setInvitationDialog(false);}} 
+                                    className={`flex justify-center items-center w-10 h-10 cursor-pointer duration-200 ease-in-out hover:bg-myback2 rounded-full ${moreOptions && 'bg-myback250'}`}>
+                                <img className='w-6' src="/more.png" alt="more" />
                             </div>
+                            {moreOptions && (
+                                <div className='absolute p-3 flex flex-col gap-1 justify-center items-center font-roboto text-white top-22 right-0 w-50 h-40 bg-myback border-4 border-myback2 rounded-2xl z-100'>
+                                    <div className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
+                                        <img className='w-5' src="/info.png" alt="info" />
+                                        <p>Group info</p>
+                                    </div>
+                                    <div className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
+                                        <img className='w-5' src="/media.png" alt="bin" />
+                                        <p>Media</p>
+                                    </div>
+                                    <div className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
+                                        <img className='w-5' src="/bin.png" alt="bin" />
+                                        <p className='text-red-600'>Leave a group</p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                     <div className="w-full h-6/7 overflow-y-hidden">

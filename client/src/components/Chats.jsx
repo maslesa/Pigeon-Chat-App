@@ -51,7 +51,7 @@ export default function Chats({ selectedChat, setSelectedChat }){
         const isThisYear = date.getFullYear() === now.getFullYear();
 
         if (isThisYear) {
-            return date.toLocaleDateString([], { month: 'short', day: 'numeric' }); // e.g., Mar 5
+            return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
         }
 
         return date.getFullYear();
@@ -115,7 +115,10 @@ export default function Chats({ selectedChat, setSelectedChat }){
                                         <p className="text-xs ">{chat.messages.length > 0 && formatMessageDate(chat.messages[chat.messages.length - 1].createdAt)}</p>
                                     </div>
                                     <p className="text-sm opacity-80 truncate max-w-[12rem]">
-                                        {chat.messages && chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].body: 'No messages yet'}</p>
+                                        {chat.messages && chat.messages.length > 0
+                                            ? `${chat.messages[chat.messages.length - 1].sentBy.username}: ${chat.messages[chat.messages.length - 1].body}`
+                                            : 'No messages yet'}
+                                    </p>
                                 </div>
                             </div>
                         )
