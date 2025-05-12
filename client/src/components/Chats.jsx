@@ -30,8 +30,12 @@ export default function Chats({ selectedChat, setSelectedChat }){
 
     useEffect(() => {
         window.updateChatList = fetchChats;
+        window.clearSelectedChat = () => {
+            setSelectedChat(null);
+        };
         return () => {
             window.updateChatList = null;
+            window.clearSelectedChat = null;
         }
     }, []);
 

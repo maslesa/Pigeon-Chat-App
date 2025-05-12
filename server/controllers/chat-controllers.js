@@ -146,6 +146,47 @@ const sendMessage = async(req, res) => {
     }
 }
 
+const leaveChat = async (req, res) => {
+    try {
+        const userId = req.userInfo.id;
+        const chatId = req.params.chatId;
+
+        const chat = await Chat.findById(chatId);
+
+        if (!chat) {
+            return res.status(404).json({
+                success: false,
+                message: 'Chat not found',
+            });
+        }
+
+        chat.members.pull(userId);
+        chat.admins.pull(userId);
+
+        await chat.save();
+
+        if (chat.members.length === 0) {
+            await Chat.findByIdAndDelete(chatId);
+            return res.status(200).json({
+                success: true,
+                message: 'Chat deleted because there is no more members',
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'User left the chat successfully',
+            chat,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: 'Something went wrong',
+        });
+    }
+};
+
 
 
 module.exports = {
@@ -153,4 +194,5 @@ module.exports = {
     chatFetchAll,
     chatJoin,
     sendMessage,
+    leaveChat,
 }

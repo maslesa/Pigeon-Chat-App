@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import axios from 'axios';
+import YesNoDialog from './YesNoDialog';
 
 const socket = io('http://localhost:5000');
 
@@ -18,13 +19,23 @@ export default function Chat({ selectedChat }) {
     const copyToClipboard = () => {
         navigator.clipboard.writeText(invitationCredentials);
         setCopied(true);
-        setTimeout(() => setCopied(false), 2000); // reset after 2 seconds
+        setTimeout(() => setCopied(false), 2000);
     };
 
     const [invitationDialog, setInvitationDialog] = useState(false);
     const [moreOptions, setMoreOptions] = useState(false);
+    const [leaveGroup, setLeaveGroup] = useState(false);
 
     const messagesEndRef = useRef(null);
+
+    const handleLeaveSuccess = () => {
+        if (typeof window.updateChatList === 'function') {
+            window.updateChatList();
+        }
+        if (typeof window.clearSelectedChat === 'function') {
+            window.clearSelectedChat();
+        }
+    };
 
     const fetchPreviousChatMessages = async () => {
         const previousMessages = await axios.get(
@@ -46,6 +57,8 @@ export default function Chat({ selectedChat }) {
         if (!selectedChat) return;
 
         setInvitationDialog(false);
+        setMoreOptions(false);
+        setLeaveGroup(false);
 
         fetchPreviousChatMessages();
 
@@ -107,9 +120,14 @@ export default function Chat({ selectedChat }) {
     }, {});
 
     return (
-        <>
+        <>  
             {selectedChat && (
                 <div className="flex flex-col max-h-screen flex-1 bg-myback2 justify-baseline items-center relative bg-cover bg-center" style={{ backgroundImage: "url('/background.png')" }} >
+                    {leaveGroup && selectedChat && (
+                        <div onClick={() => setLeaveGroup(false)} className="flex justify-center items-center absolute top-1/2 left-1/2 w-full h-full transform -translate-x-1/2 -translate-y-1/2 bg-myback250 z-150">
+                            <YesNoDialog selectedChat={selectedChat} onLeaveSuccess={handleLeaveSuccess} onClose={() => setLeaveGroup(false) } />
+                        </div>
+                    )}
                     <div className='w-full bg-myback flex justify-between pl-10 pr-10'>
                         <div className="h-20 flex gap-3 items-center justify-baseline shadow-lg">
                             <div className="w-12 h-12 bg-white flex justify-center items-center rounded-full">
@@ -151,7 +169,7 @@ export default function Chat({ selectedChat }) {
                                 <img className='w-6' src="/more.png" alt="more" />
                             </div>
                             {moreOptions && (
-                                <div className='absolute p-3 flex flex-col gap-1 justify-center items-center font-roboto text-white top-22 right-0 w-50 h-40 bg-myback border-4 border-myback2 rounded-2xl z-100'>
+                                <div className='absolute p-3 flex flex-col gap-1 justify-center items-center font-roboto text-white top-22 right-0 w-50 h-45 bg-myback border-4 border-myback2 rounded-2xl z-100'>
                                     <div className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
                                         <img className='w-5' src="/info.png" alt="info" />
                                         <p>Group info</p>
@@ -160,8 +178,9 @@ export default function Chat({ selectedChat }) {
                                         <img className='w-5' src="/media.png" alt="bin" />
                                         <p>Media</p>
                                     </div>
-                                    <div className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
-                                        <img className='w-5' src="/bin.png" alt="bin" />
+                                    <hr className='w-full h-1 border-0 bg-myback2 mt-1 mb-1 rounded-2xl' />
+                                    <div onClick={() => setLeaveGroup(true)} className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
+                                        <img className='w-5' src="/leave.png" alt="leave" />
                                         <p className='text-red-600'>Leave a group</p>
                                     </div>
                                 </div>
