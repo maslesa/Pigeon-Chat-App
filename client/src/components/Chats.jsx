@@ -14,14 +14,14 @@ export default function Chats({ selectedChat, setSelectedChat }){
         const res = await axios.get(`http://localhost:5000/chat/fetch-all`, axiosConfig);
 
         const sortedChats = res.data.chats.sort((a, b) => {
-        const lastMsgA = a.messages[a.messages.length - 1];
-        const lastMsgB = b.messages[b.messages.length - 1];
+            const lastMsgA = a.messages[a.messages.length - 1];
+            const lastMsgB = b.messages[b.messages.length - 1];
 
-        const dateA = lastMsgA ? new Date(lastMsgA.createdAt) : new Date(0);
-        const dateB = lastMsgB ? new Date(lastMsgB.createdAt) : new Date(0);
+            const dateA = lastMsgA ? new Date(lastMsgA.createdAt) : new Date(0);
+            const dateB = lastMsgB ? new Date(lastMsgB.createdAt) : new Date(0);
 
-        return dateB - dateA;
-    });
+            return dateB - dateA;
+        });
 
         setChats(sortedChats);
     }
@@ -32,6 +32,28 @@ export default function Chats({ selectedChat, setSelectedChat }){
             window.updateChatList = null;
         }
     }, []);
+
+    function formatMessageDate(createdAt) {
+        const date = new Date(createdAt);
+        const now = new Date();
+
+        const isToday =
+            date.getDate() === now.getDate() &&
+            date.getMonth() === now.getMonth() &&
+            date.getFullYear() === now.getFullYear();
+
+        if (isToday) {
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        const isThisYear = date.getFullYear() === now.getFullYear();
+
+        if (isThisYear) {
+            return date.toLocaleDateString([], { month: 'short', day: 'numeric' }); // e.g., Mar 5
+        }
+
+        return date.getFullYear();
+}
 
     useEffect(() => {
         fetchChats();
@@ -79,7 +101,7 @@ export default function Chats({ selectedChat, setSelectedChat }){
                                 <div className="w-full flex flex-col h-15 justify-center font-roboto font-normal text-white pr-3">
                                     <div className="flex justify-between items-center">
                                         <p>{chat.title}</p>
-                                        <p className="text-xs ">{chat.messages[chat.messages.length - 1] && new Date(chat.messages[chat.messages.length - 1].createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                        <p className="text-xs ">{chat.messages.length > 0 && formatMessageDate(chat.messages[chat.messages.length - 1].createdAt)}</p>
                                     </div>
                                     <p className="text-sm opacity-80 truncate max-w-[12rem]">
                                         {chat.messages && chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].body: 'No messages yet'}</p>
