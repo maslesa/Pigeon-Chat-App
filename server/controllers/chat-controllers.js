@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const { createMessage } = require('./message-controller');
 
-function generatePasscode(length = 8) {
+function generatePasscode(length = 16) {
     return crypto.randomBytes(length).toString('hex').slice(0, length);
 }
 
@@ -15,12 +15,10 @@ const chatCreate = async(req, res) => {
         const userId = req.userInfo.id;
 
         const passcode = generatePasscode();
-        const salt = await bcrypt.genSalt(10);
-        const hashedPasscode = await bcrypt.hash(passcode, salt);
 
         const newChat = new Chat({
             title: title,
-            passcode: hashedPasscode,
+            passcode: passcode,
             members: [userId],
             admins: [userId],
         });
@@ -87,7 +85,7 @@ const chatJoin = async(req, res) => {
 
         const chat = await Chat.findById(chatId);
 
-        const passcodeMatches = await bcrypt.compare(passcode, chat.passcode);
+        const passcodeMatches = chat.passcode === passcode;
 
         if(!passcodeMatches){
             return res.status(401).json({

@@ -5,6 +5,7 @@ const cors = require('cors');
 const {Server} = require('socket.io')
 const connectToDB = require('./database/db');
 const {createMessage} = require('./controllers/message-controller');
+const Chat = require('./models/Chat');
 
 const authRoutes = require('./routes/auth-routes');
 const chatRoutes = require('./routes/chat-routes');
@@ -24,8 +25,12 @@ app.use('/chat', chatRoutes);
 io.on('connection', (socket) => {
     // console.log(`New user is connected: ${socket.id}`);
 
-    socket.on('joinRoom', (chatId) => {
-        socket.join(chatId); // join socket room for chat
+    socket.on('joinRoom', async(chatId) => {
+        socket.join(chatId);
+        const chat = await Chat.findById(chatId);
+        const membersCount = chat.members.length;
+
+        io.to(chatId).emit('updateMembers', membersCount);
     });
 
     socket.on('chatMessage', async ({ chatId, userId, message }) => {
