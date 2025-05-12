@@ -1,6 +1,9 @@
 import {useState} from 'react'
 import axios from 'axios';
 import Alert from "./Alert";
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:5000');
 
 export default function YesNoDialog({ onClose, selectedChat, onLeaveSuccess  }){
 
@@ -12,6 +15,7 @@ export default function YesNoDialog({ onClose, selectedChat, onLeaveSuccess  }){
     const leaveChat = async() => {
         try {
             await axios.put(`http://localhost:5000/chat/leave/${selectedChat._id}`, {}, axiosConfig);
+            socket.emit('leaveRoom', selectedChat._id);
             if (onLeaveSuccess) onLeaveSuccess();
         } catch (error) {
             setAlert({ message: "Error leaving the group!", isError: true, duration: 2000 });

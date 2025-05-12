@@ -23,7 +23,6 @@ app.use('/user', authRoutes);
 app.use('/chat', chatRoutes);
 
 io.on('connection', (socket) => {
-    // console.log(`New user is connected: ${socket.id}`);
 
     socket.on('joinRoom', async(chatId) => {
         socket.join(chatId);
@@ -40,6 +39,15 @@ io.on('connection', (socket) => {
         } catch (error) {
             console.error('Socket sendMessage error:', error);
             socket.emit('errorMessage', 'Message failed to send.');
+        }
+    });
+
+    socket.on('leaveRoom', async(chatId) => {
+        socket.leave(chatId);
+        const chat = await Chat.findById(chatId);
+        if (chat) {
+            const membersCount = chat.members.length;
+            io.to(chatId).emit('updateMembers', membersCount);
         }
     });
 });

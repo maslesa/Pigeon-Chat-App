@@ -2,17 +2,22 @@ import { useEffect, useState } from "react";
 import axios from 'axios';
 import NewChat from "./NewChat";
 import JoinChat from "./JoinChat";
+import { useNavigate } from 'react-router-dom'
 
-export default function Chats({ selectedChat, setSelectedChat }){
+export default function Chats({ selectedChat, setSelectedChat }) {
+
+    const navigate = useNavigate();
 
     const token = localStorage.getItem('token');
-    const axiosConfig = { headers: { Authorization : `Bearer ${token}` }}
+    const axiosConfig = { headers: { Authorization: `Bearer ${token}` } }
 
     const [chats, setChats] = useState([]);
     const [newChatDialog, setNewChatDialog] = useState(false);
     const [joinChatDialog, setJoinChatDiaog] = useState(false);
 
-    const fetchChats = async() => {
+    const [userMenu, setUserMenu] = useState(false);
+
+    const fetchChats = async () => {
         const res = await axios.get(`http://localhost:5000/chat/fetch-all`, axiosConfig);
 
         const sortedChats = res.data.chats.sort((a, b) => {
@@ -59,21 +64,62 @@ export default function Chats({ selectedChat, setSelectedChat }){
         }
 
         return date.getFullYear();
-}
+    }
 
     useEffect(() => {
         fetchChats();
     }, []);
 
-    return(
-        <div className="w-1/4 h-full flex flex-col bg-myback shadow-2xl border-r-1 border-white">
+    return (
+        <div className="w-1/4 h-full flex flex-col bg-myback shadow-2xl border-r-1 border-white relative">
+            {userMenu && (
+                <div onClick={() => setUserMenu(false)} className="w-full h-full absolute bg-myback250 z-200">
+                    <div onClick={(e) => e.stopPropagation()} className="flex flex-col p-3 absolute left-4 top-15 w-60 bg-myback border-4 border-myback2 rounded-2xl font-roboto text-white">
+                        <div className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
+                            <img className='w-5' src="/login.png" alt="acc" />
+                            <p>Account settings</p>
+                        </div>
+                        <hr className='w-full h-1 border-0 bg-myback2 mt-1 mb-1 rounded-2xl' />
+                        <div className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
+                            <img className='w-5' src="/password.png" alt="acc" />
+                            <p>Security settings</p>
+                        </div>
+                        <div className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
+                            <img className='w-5' src="/moon.png" alt="nightmode" />
+                            <p>Night mode</p>
+                        </div>
+                        <div className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
+                            <img className='w-5' src="/thinking.png" alt="thinking" />
+                            <p>My notes</p>
+                        </div>
+                        <div className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-between items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
+                            <div className="flex gap-2">
+                                <img className='w-5' src="/logo.png" alt="thinking" />
+                                <p>AI Pigeon</p>
+                            </div>
+                            <div className="w-12 flex justify-center items-center rounded-full font-semibold text-xs p-1 bg-pink-700">
+                                NEW
+                            </div>
+                        </div>
+                        <hr className='w-full h-1 border-0 bg-myback2 mt-1 mb-1 rounded-2xl' />
+                        <div onClick={() => navigate('/login')} className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
+                            <img className='w-5' src="/leave2.png" alt="acc" />
+                            <p>Log out</p>
+                        </div>
+                        <div className="pl-3 flex justify-baseline items-center mt-5 text-sm opacity-50">
+                            Pigeon 1.01.10
+                        </div>
+                        
+                    </div>
+                </div>
+            )}
             {newChatDialog && (
                 <div onClick={() => setNewChatDialog(false)} className="absolute flex justify-center items-center top-0 left-0 w-screen h-screen bg-black50 z-50">
                     <NewChat onChatCreated={() => {
                         fetchChats();
-                        
+
                         setNewChatDialog(false);
-                    }}/>
+                    }} />
                 </div>
             )}
             {joinChatDialog && (
@@ -81,12 +127,12 @@ export default function Chats({ selectedChat, setSelectedChat }){
                     <JoinChat onJoinedChat={() => {
                         fetchChats();
                         setJoinChatDiaog(false);
-                    }}/>
+                    }} />
                 </div>
             )}
-            <div className="w-full flex justify-between items-end p-5 font-roboto font-bold text-2xl text-white"> 
+            <div className="w-full flex justify-between items-end p-5 font-roboto font-bold text-2xl text-white">
                 <div className="flex gap-3 justify-center items-center">
-                    <img className="w-5 cursor-pointer duration-200 ease-in-out hover:scale-105" src="/menu.png" alt="" />
+                    <img onClick={() => { setUserMenu(!userMenu); }} className="w-5 cursor-pointer duration-200 ease-in-out hover:scale-105" src="/menu.png" alt="" />
                     <p>Chats</p>
                 </div>
                 <div className="flex gap-3">
@@ -101,7 +147,7 @@ export default function Chats({ selectedChat, setSelectedChat }){
             <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-1 custom-scrollbar">
                 {chats && chats.length > 0 ? (
                     chats.map((chat) => {
-                        return(
+                        return (
                             <div onClick={() => setSelectedChat(chat)} key={chat._id} className={`w-full min-h-21 flex items-center pl-3 gap-3 duration-200 ease-in-out cursor-pointer
                                                          rounded-2xl  ${selectedChat && selectedChat._id === chat._id ? 'bg-myback2' : 'hover:bg-black50'}`}>
                                 <div className="min-w-13 h-13 bg-white flex justify-center items-center rounded-full">
