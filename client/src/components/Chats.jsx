@@ -60,7 +60,7 @@ export default function Chats({ selectedChat, setSelectedChat }){
     }, []);
 
     return(
-        <div className="w-1/4 h-full flex flex-col items-center bg-myback shadow-2xl border-r-1 border-white">
+        <div className="w-1/4 h-full flex flex-col bg-myback shadow-2xl border-r-1 border-white">
             {newChatDialog && (
                 <div onClick={() => setNewChatDialog(false)} className="absolute flex justify-center items-center top-0 left-0 w-screen h-screen bg-black50 z-50">
                     <NewChat onChatCreated={() => {
@@ -83,7 +83,7 @@ export default function Chats({ selectedChat, setSelectedChat }){
                     </div>
                 </div>
             </div>
-            <div className="w-full p-5 grid grid-cols-1 gap-1">
+            <div className="flex-1 overflow-y-auto p-5 grid grid-cols-1 gap-1 custom-scrollbar">
                 {chats && chats.length > 0 ? (
                     chats.map((chat) => {
                         return(

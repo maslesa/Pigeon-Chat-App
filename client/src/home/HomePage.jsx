@@ -7,8 +7,8 @@ export default function HomePage(){
     const [selectedChat, setSelectedChat] = useState(null);
 
     return(
-        <div className="max-w-screen h-screen bg-myback2 flex flex-col justify-baseline items-center">
-            <div className="w-full flex-1 flex justify-baseline bg-myback2">
+        <div className="max-w-screen h-screen bg-myback2 flex">
+            <div className="w-full flex-1 flex justify-baseline bg-myback2 bg-cover bg-center" style={{ backgroundImage: "url('/background.png')" }}>
                 <Chats selectedChat={selectedChat} setSelectedChat={setSelectedChat}/>
                 <Chat selectedChat={selectedChat}/>
             </div>
