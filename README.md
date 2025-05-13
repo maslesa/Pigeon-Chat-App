@@ -54,8 +54,8 @@ Pigeon is a real-time group chat application where users can communicate via mes
 ### Installation
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/pigeon-chat.git
-cd pigeon-chat
+git clone https://github.com/maslesa/Pigeon-Chat-App.git
+cd pigeon-chat-app
 
 # Install backend dependencies
 cd server
