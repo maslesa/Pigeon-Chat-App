@@ -95,7 +95,7 @@ export default function Chats({ selectedChat, setSelectedChat }) {
                         <div className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-between items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
                             <div className="flex gap-2">
                                 <img className='w-5' src="/logo.png" alt="thinking" />
-                                <p>AI Pigeon</p>
+                                <p>Pidgey AI</p>
                             </div>
                             <div className="w-12 flex justify-center items-center rounded-full font-semibold text-xs p-1 bg-pink-700">
                                 NEW
@@ -107,7 +107,7 @@ export default function Chats({ selectedChat, setSelectedChat }) {
                             <p>Log out</p>
                         </div>
                         <div className="pl-3 flex justify-baseline items-center mt-5 text-sm opacity-50">
-                            Pigeon 1.01.10
+                            &copy; Pigeon 1.01.10
                         </div>
                         
                     </div>

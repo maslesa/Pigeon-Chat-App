@@ -16,6 +16,8 @@ export default function Chat({ selectedChat }) {
     const [copied, setCopied] = useState(false);
     const [members, setMembers] = useState(0);
 
+    const [chatMembers, setChatMembers] = useState(null);
+
     const copyToClipboard = () => {
         navigator.clipboard.writeText(invitationCredentials);
         setCopied(true);
@@ -25,7 +27,7 @@ export default function Chat({ selectedChat }) {
     const [invitationDialog, setInvitationDialog] = useState(false);
     const [moreOptions, setMoreOptions] = useState(false);
     const [leaveGroup, setLeaveGroup] = useState(false);
-
+    const [groupInfo, setGroupInfo] = useState(false);
     const messagesEndRef = useRef(null);
 
     const handleLeaveSuccess = () => {
@@ -36,6 +38,11 @@ export default function Chat({ selectedChat }) {
             window.clearSelectedChat();
         }
     };
+
+    const fetchChatMembers = async() => {
+        const res = await axios.get(`http://localhost:5000/chat/fetch-members/${selectedChat._id}`, axiosConfig);
+        setChatMembers(res.data.members);
+    }
 
     const fetchPreviousChatMessages = async () => {
         const previousMessages = await axios.get(
@@ -59,8 +66,10 @@ export default function Chat({ selectedChat }) {
         setInvitationDialog(false);
         setMoreOptions(false);
         setLeaveGroup(false);
+        setGroupInfo(false);
 
         fetchPreviousChatMessages();
+        fetchChatMembers();
 
         setMembers(selectedChat.members.length);
 
@@ -130,6 +139,57 @@ export default function Chat({ selectedChat }) {
                                 <YesNoDialog selectedChat={selectedChat} onLeaveSuccess={handleLeaveSuccess} onClose={() => setLeaveGroup(false)} />
                             </div>
                         )}
+                        {groupInfo && selectedChat && (
+                            <div onClick={() => setGroupInfo(false)} className='flex justify-center items-center absolute top-1/2 left-1/2 w-full h-full transform -translate-x-1/2 -translate-y-1/2 bg-myback250 z-150'>
+                                <div onClick={(e) => e.stopPropagation()} className='w-1/3 h-full absolute right-0 bg-myback flex flex-col items-baseline font-roboto text-white'>
+                                    <div className='pl-5 flex gap-5 justify-baseline items-center w-full h-1/12'>
+                                        <img onClick={() => setGroupInfo(false)} className='w-5 cursor-pointer duration-200 ease-in-out hover:scale-105' src="/close.png" alt="close" />
+                                        <p className='font-semibold text-xl'>Group info</p>
+                                    </div>
+                                    <div className='w-full h-1/2 bg-white flex justify-center items-center relative'>
+                                        {selectedChat.backgroundImage ? (
+                                            <div>SL</div>
+                                        ) : (
+                                            <img className="w-25" src="group-chat.png" alt="" />
+                                        )}
+                                        <div className='w-full p-3 pt-10 bg-[linear-gradient(to_top,_var(--color-myback2)_0%,_var(--color-myback2)_0%,_transparent_100%)] pl-5 flex flex-col justify-center items-baseline absolute bottom-0'>
+                                            <p className='text-2xl font-semibold'>{selectedChat.title}</p>
+                                            <p className='text-sm opacity-80'>{members} {members === 1 ? 'member' : 'members'}</p>
+                                        </div>
+                                    </div>
+                                    <div className='w-full p-3 pl-5 pr-5 flex items-center justify-between'>
+                                        <div className='flex gap-1 items-center justify-center'>
+                                            <img className='w-5 cursor-pointer' src="/media.png" alt="media" />
+                                            <p className='text-lg font-medium cursor-pointer'>Media</p>
+                                        </div>
+                                        <div className='flex items-center justify-center'>
+                                            <img className='w-6 cursor-pointer duration-200 ease-in-out hover:scale-105' src="open.png" alt="open" />
+                                        </div>
+                                    </div>
+                                    <div className='w-full bg-myback p-3 pl-5 pr-5'>
+                                        <div className='flex gap-1 items-center justify-baseline mb-3'>
+                                            <img className='w-5 cursor-pointer' src="/members.png" alt="members" />
+                                            <p className='text-lg font-medium cursor-pointer'>Members</p>
+                                        </div>
+                                        <div className='flex flex-col pl-6 pr-3 overflow-y-auto max-h-48 custom-scrollbar'>
+                                            {chatMembers && chatMembers.map((member) => {
+                                                const isMe = member._id === user._id;
+                                                return <div key={member._id} className='p-3 flex gap-3 items-center justify-baseline cursor-pointer duration-200 ease-in-out hover:bg-myback2 rounded-xl'>
+                                                            {member.profileImage ? (
+                                                                <div>sl</div>
+                                                            ) : (
+                                                                <div className='bg-white w-10 h-10 rounded-full flex items-center justify-center text-myback2 text-xl font-semibold'>
+                                                                    {member.nameSurname[0]}
+                                                                </div>
+                                                            )}
+                                                            {isMe ? (<p>Me</p>) : (<p>{member.username}</p>)}
+                                                        </div>;
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                         <div className='w-full bg-myback flex justify-between pl-10 pr-10'>
                             <div className="h-20 flex gap-3 items-center justify-baseline shadow-lg">
                                 <div className="w-12 h-12 bg-white flex justify-center items-center rounded-full">
@@ -172,7 +232,7 @@ export default function Chat({ selectedChat }) {
                                 </div>
                                 {moreOptions && (
                                     <div className='absolute p-3 flex flex-col gap-1 justify-center items-center font-roboto text-white top-22 right-0 w-50 h-45 bg-myback border-4 border-myback2 rounded-2xl z-100'>
-                                        <div className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
+                                        <div onClick={() => {setMoreOptions(false);setGroupInfo(true);}} className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
                                             <img className='w-5' src="/info.png" alt="info" />
                                             <p>Group info</p>
                                         </div>

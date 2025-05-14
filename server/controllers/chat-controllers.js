@@ -187,6 +187,39 @@ const leaveChat = async (req, res) => {
     }
 };
 
+const fetchMembers = async(req, res) => {
+    try {
+        const chatId = req.params.chatId;
+
+        const chat = await Chat.findById(chatId)
+                        .populate({
+                            path: 'members',
+                            populate: {
+                                path: 'profileImage'
+                            }
+                        })
+        
+        if(!chat){
+            return res.status(404).json({
+                success: false,
+                message: 'Error finding members'
+            })
+        }
+
+        res.status(200).json({
+            success: true,
+            members: chat.members,
+        })
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: 'Something went wrong',
+        });
+    }
+} 
+
 
 
 module.exports = {
@@ -195,4 +228,5 @@ module.exports = {
     chatJoin,
     sendMessage,
     leaveChat,
+    fetchMembers,
 }

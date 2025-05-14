@@ -13,6 +13,10 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    profileImage: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ProfileImage'
+    }
 });
 
 module.exports = mongoose.model('User', UserSchema);
