@@ -18,6 +18,7 @@ export default function Chats({ selectedChat, setSelectedChat }) {
 
     const [userMenu, setUserMenu] = useState(false);
     const [accountSettings, setAccountSettings] = useState(false);
+    const [securitySettings, setSecuritySettings] = useState(false);
 
     const fetchChats = async () => {
         const res = await axios.get(`http://localhost:5000/chat/fetch-all`, axiosConfig);
@@ -82,7 +83,7 @@ export default function Chats({ selectedChat, setSelectedChat }) {
                             <p>Account settings</p>
                         </div>
                         <hr className='w-full h-1 border-0 bg-myback2 mt-1 mb-1 rounded-2xl' />
-                        <div className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
+                        <div onClick={() => {setSecuritySettings(true); setUserMenu(false);}} className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
                             <img className='w-5' src="/password.png" alt="acc" />
                             <p>Security settings</p>
                         </div>
@@ -131,13 +132,46 @@ export default function Chats({ selectedChat, setSelectedChat }) {
                         )}
                     </div>
                     <div className="flex flex-col gap-2 w-full p-5">
-                        <p className="font-semibold text-3xl">{user.nameSurname}</p>
-                        <p className="text-xl opacity-50">{user.username}</p>
+                        <p className="font-semibold text-2xl">{user.nameSurname}</p>
+                        <p className="text-lg opacity-50">{user.username}</p>
                     </div>
                     <div className="absolute p-5 bottom-0 flex w-full">
                         <div onClick={() => navigate('/login')} className="flex gap-2 w-full p-3 items-center justify-baseline rounded-lg duration-200 ease-in-out hover:bg-myback2 cursor-pointer">
                             <img className="w-5" src="/leave2.png" alt="logout" />
                             <p>Log out</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {securitySettings && (
+                <div className="w-full h-full absolute bg-myback z-200 font-roboto text-white">
+                    <div className='pl-5 flex gap-5 justify-baseline items-center w-full h-1/12'>
+                        <img onClick={() => setSecuritySettings(false)} className='w-5 cursor-pointer duration-200 ease-in-out hover:scale-105' src="/close.png" alt="close" />
+                        <p className='font-semibold text-xl'>Security settings</p>
+                    </div>
+                    <div className="flex w-full flex-col gap-2 p-5 bg-myback">
+                        <div className="flex gap-2 items-center justify-baseline mb-3">
+                            <img className="w-5" src="/password.png" alt="password" />
+                            <p className="text-lg font-semibold">Change password</p>
+                        </div>
+                        <div className="flex flex-col gap-5 pl-5">
+                            <div className="flex flex-col gap-1">
+                                <label className="font-semibold cursor-pointer" htmlFor="oldpass">Old password</label>
+                                <input id="oldpass" className="w-full border-2 border-white p-2 rounded-lg outline-0 pl-3" type="password" placeholder="Enter old password" />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <label className="font-semibold cursor-pointer" htmlFor="newpass">New password</label>
+                                <input id="newpass" className="w-full border-2 border-white p-2 rounded-lg outline-0 pl-3" type="password" placeholder="Enter new password" />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <label className="font-semibold cursor-pointer" htmlFor="confnewpass">Confirm new password</label>
+                                <input id="confnewpass" className="w-full border-2 border-white p-2 rounded-lg outline-0 pl-3" type="password" placeholder="Confirm new password" />
+                            </div>
+                        </div>
+                        <div className="flex justify-center items-center p-5">
+                            <div className="p-3 pl-5 pr-5 border-2 rounded-xl duration-200 ease-in-out hover:bg-white hover:text-myback cursor-pointer">
+                                Change password
+                            </div>
                         </div>
                     </div>
                 </div>
