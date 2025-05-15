@@ -169,7 +169,7 @@ export default function Chat({ selectedChat }) {
                                     <div className='w-full bg-myback p-3 pl-5 pr-5'>
                                         <div className='flex gap-1 items-center justify-baseline mb-3'>
                                             <img className='w-5 cursor-pointer' src="/members.png" alt="members" />
-                                            <p className='text-lg font-medium cursor-pointer'>Members</p>
+                                            <p className='text-lg font-medium cursor-pointer'>Members ( {members} ) </p>
                                         </div>
                                         <div className='flex flex-col pl-6 pr-3 overflow-y-auto max-h-48 custom-scrollbar'>
                                             {chatMembers && chatMembers.map((member) => {
@@ -192,7 +192,7 @@ export default function Chat({ selectedChat }) {
                         )}
                         <div className='w-full bg-myback flex justify-between pl-10 pr-10'>
                             <div className="h-20 flex gap-3 items-center justify-baseline shadow-lg">
-                                <div className="w-12 h-12 bg-white flex justify-center items-center rounded-full">
+                                <div onClick={() => setGroupInfo(true)} className="w-12 h-12 bg-white flex justify-center items-center rounded-full cursor-pointer">
                                     {selectedChat.backgroundImage ? (
                                         <div>SL</div>
                                     ) : (
@@ -200,7 +200,7 @@ export default function Chat({ selectedChat }) {
                                     )}
                                 </div>
                                 <div className="flex flex-col h-15 justify-baseline font-roboto font-normal pt-1 text-white text-xl">
-                                    <p className="cursor-pointer duration-200 ease-in-out hover:scale-101">
+                                    <p onClick={() => setGroupInfo(true)} className="cursor-pointer duration-200 ease-in-out hover:scale-101">
                                         {selectedChat.title}
                                     </p>
                                     <div className="text-sm opacity-50">

@@ -10,12 +10,14 @@ export default function Chats({ selectedChat, setSelectedChat }) {
 
     const token = localStorage.getItem('token');
     const axiosConfig = { headers: { Authorization: `Bearer ${token}` } }
+    const user = JSON.parse(localStorage.getItem('user'));
 
     const [chats, setChats] = useState([]);
     const [newChatDialog, setNewChatDialog] = useState(false);
     const [joinChatDialog, setJoinChatDiaog] = useState(false);
 
     const [userMenu, setUserMenu] = useState(false);
+    const [accountSettings, setAccountSettings] = useState(false);
 
     const fetchChats = async () => {
         const res = await axios.get(`http://localhost:5000/chat/fetch-all`, axiosConfig);
@@ -75,7 +77,7 @@ export default function Chats({ selectedChat, setSelectedChat }) {
             {userMenu && (
                 <div onClick={() => setUserMenu(false)} className="w-full h-full absolute bg-myback250 z-200">
                     <div onClick={(e) => e.stopPropagation()} className="flex flex-col p-3 absolute left-4 top-15 w-60 bg-myback border-4 border-myback2 rounded-2xl font-roboto text-white">
-                        <div className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
+                        <div onClick={() => { setUserMenu(false); setAccountSettings(true); }} className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
                             <img className='w-5' src="/login.png" alt="acc" />
                             <p>Account settings</p>
                         </div>
@@ -109,7 +111,34 @@ export default function Chats({ selectedChat, setSelectedChat }) {
                         <div className="pl-3 flex justify-baseline items-center mt-5 text-sm opacity-50">
                             &copy; Pigeon 1.01.10
                         </div>
-                        
+
+                    </div>
+                </div>
+            )}
+            {accountSettings && (
+                <div className="w-full h-full absolute bg-myback z-200 font-roboto text-white">
+                    <div className='pl-5 flex gap-5 justify-baseline items-center w-full h-1/12'>
+                        <img onClick={() => setAccountSettings(false)} className='w-5 cursor-pointer duration-200 ease-in-out hover:scale-105' src="/close.png" alt="close" />
+                        <p className='font-semibold text-xl'>Account settings</p>
+                    </div>
+                    <div className='w-full h-1/2 bg-white flex justify-center items-center relative'>
+                        {user.profileImage ? (
+                            <div>SL</div>
+                        ) : (
+                            <div className='bg-white w-50 h-10 flex items-center justify-center text-myback2 text-7xl font-semibold'>
+                                {user.nameSurname[0]}
+                            </div>
+                        )}
+                    </div>
+                    <div className="flex flex-col gap-2 w-full p-5">
+                        <p className="font-semibold text-3xl">{user.nameSurname}</p>
+                        <p className="text-xl opacity-50">{user.username}</p>
+                    </div>
+                    <div className="absolute p-5 bottom-0 flex w-full">
+                        <div onClick={() => navigate('/login')} className="flex gap-2 w-full p-3 items-center justify-baseline rounded-lg duration-200 ease-in-out hover:bg-myback2 cursor-pointer">
+                            <img className="w-5" src="/leave2.png" alt="logout" />
+                            <p>Log out</p>
+                        </div>
                     </div>
                 </div>
             )}
