@@ -148,8 +148,48 @@ const changePassword = async (req, res) => {
     }
 }
 
+const changeNameSurname = async(req, res) => {
+    try {
+        const {newNameSurname} = req.body;
+
+        if(!newNameSurname || newNameSurname.length < 4){
+            return res.status(400).json({
+                success: false,
+                message: 'New nameSurname invalid format'
+            })
+        }
+
+
+        const userId = req.userInfo.id;
+        const user = await User.findById(userId);
+
+        if(!user){
+            return res.status(404).json({
+                success: false,
+                message: 'User with that Id is not found'
+            })
+        }
+
+        user.nameSurname = newNameSurname;
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'NameSurname updated successfully'
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: 'Something went wrong',
+        })
+    }
+}
+
 module.exports = {
     userRegister,
     userLogin,
     changePassword,
+    changeNameSurname,
 }

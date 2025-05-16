@@ -25,6 +25,9 @@ export default function Chats({ selectedChat, setSelectedChat }) {
     const [oldPassword, setOldPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmNewPassword, setConfirmNewPassword] = useState('');
+    const [changeNameSurnameToggle, setChangeNameSurnameToggle] = useState(false);
+    const [newNameSurname, setNewNameSurname] = useState(user.nameSurname);
+    const [newNameFirstLetter, setNewNameFirstLetter] = useState(user.nameSurname.charAt(0).toUpperCase());
 
     const fetchChats = async () => {
         const res = await axios.get(`http://localhost:5000/chat/fetch-all`, axiosConfig);
@@ -44,18 +47,37 @@ export default function Chats({ selectedChat, setSelectedChat }) {
 
     const changePassword = async () => {
         try {
-            if(newPassword != confirmNewPassword){
+            if (newPassword != confirmNewPassword) {
                 setAlert({ message: "New passwords don't match", isError: true, duration: 2000 });
                 return;
             }
-            await axios.put(`http://localhost:5000/user/password/change`, {oldPassword, newPassword}, axiosConfig);
+            await axios.put(`http://localhost:5000/user/password/change`, { oldPassword, newPassword }, axiosConfig);
             setAlert({ message: "Password changed successfully!", duration: 2000 });
             setOldPassword('');
             setNewPassword('');
             setConfirmNewPassword('');
         } catch (error) {
             console.log(error);
-            setAlert({ message: "Invalid new password!", isError: true, duration: 2000 });
+            setAlert({ message: "Invalid new password format!", isError: true, duration: 2000 });
+        }
+    }
+
+    const changeNameSurname = async () => {
+        try {
+            if(newNameSurname.length < 3){
+                setAlert({ message: "Full name has to be min 3 characters long", isError: true, duration: 2000 });
+                return;
+            }
+            await axios.put(`http://localhost:5000/user/nameSurname/change`, { newNameSurname }, axiosConfig);
+            setChangeNameSurnameToggle(false);
+            user.nameSurname = newNameSurname;
+            localStorage.setItem('user', JSON.stringify(user));
+            setNewNameFirstLetter(user.nameSurname.charAt(0).toUpperCase());
+            setAlert({ message: "Full name changed successfully!", duration: 2000 });
+            setNewNameSurname(user.nameSurname);
+        } catch (error) {
+            console.log(error);
+            setAlert({ message: "Invalid new full name format!", isError: true, duration: 2000 });
         }
     }
 
@@ -100,10 +122,10 @@ export default function Chats({ selectedChat, setSelectedChat }) {
         <div className="w-1/4 h-full flex flex-col bg-myback shadow-2xl border-r-1 border-white relative">
             {alert && (
                 <Alert
-                message={alert.message}
-                isError={alert.isError}
-                duration={alert.duration}
-                onClose={() => setAlert(null)}
+                    message={alert.message}
+                    isError={alert.isError}
+                    duration={alert.duration}
+                    onClose={() => setAlert(null)}
                 />
             )}
             {userMenu && (
@@ -158,12 +180,22 @@ export default function Chats({ selectedChat, setSelectedChat }) {
                             <div>SL</div>
                         ) : (
                             <div className='bg-white w-50 h-10 flex items-center justify-center text-myback2 text-7xl font-semibold'>
-                                {user.nameSurname[0]}
+                                {newNameFirstLetter}
                             </div>
                         )}
                     </div>
                     <div className="flex flex-col gap-2 w-full p-5">
-                        <p className="font-semibold text-2xl">{user.nameSurname}</p>
+                        <div className="flex w-full items-center justify-between">
+                            <input disabled={!changeNameSurnameToggle} className={`text-2xl max-w-3/4 p-2 pl-3 outline-0  ${changeNameSurnameToggle && 'border-2 border-white rounded-lg'}`} type="text" value={newNameSurname} onChange={(e) => setNewNameSurname(e.target.value)} />
+                            {!changeNameSurnameToggle ? (
+                                <img onClick={() => setChangeNameSurnameToggle(true)} className="w-5 cursor-pointer duration-200 ease-in-out hover:scale-110" src="/change.png" alt="change" />
+                            ) : (
+                                <div className="flex gap-2 items-center">
+                                    <img onClick={() => setChangeNameSurnameToggle(false)} className="w-8 cursor-pointer duration-200 ease-in-out hover:scale-110" src="/cancel.png" alt="cancel" />
+                                    <img onClick={changeNameSurname} className="w-7 cursor-pointer duration-200 ease-in-out hover:scale-110" src="/copied.png" alt="change" />
+                                </div>
+                            )}
+                        </div>
                         <p className="text-lg opacity-50">{user.username}</p>
                     </div>
                     <div className="absolute p-5 bottom-0 flex w-full">
