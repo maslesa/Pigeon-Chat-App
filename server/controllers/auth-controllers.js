@@ -49,7 +49,7 @@ const userRegister = async (req, res) => {
 const userLogin = async (req, res) => {
     try {
         const { username, password } = req.body;
-        const user = await User.findOne({ username });
+        const user = await User.findOne({ username }).populate('profileImage');
         if (!user) {
             return res.status(404).json({
                 success: false,

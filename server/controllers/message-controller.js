@@ -1,7 +1,7 @@
 const Chat = require('../models/Chat');
 const Message = require('../models/Message');
 
-const createMessage = async({chatId, userId, message}) => {
+const createMessage = async ({ chatId, userId, message }) => {
     try {
         const newMessage = await Message.create({
             body: message,
@@ -11,12 +11,18 @@ const createMessage = async({chatId, userId, message}) => {
 
         await Chat.findByIdAndUpdate(
             chatId,
-            { $push : { messages : newMessage._id } }
+            { $push: { messages: newMessage._id } }
         )
 
-        const populatedMessage = await newMessage.populate('sentBy', 'username');
-        
-        
+        const populatedMessage = await newMessage.populate({
+            path: 'sentBy',
+            populate: {
+                path: 'profileImage',
+                model: 'ProfileImage'
+            }
+        });
+
+
         return populatedMessage;
 
     } catch (error) {
@@ -28,26 +34,32 @@ const createMessage = async({chatId, userId, message}) => {
     }
 }
 
-const fetchAllMessages = async(req, res) => {
+const fetchAllMessages = async (req, res) => {
     try {
         const chatId = req.params.chatId;
 
-        const messages = await Message.find({ chat:chatId })
-            .populate('sentBy', 'username _id')
+        const messages = await Message.find({ chat: chatId })
+            .populate({
+                path: 'sentBy',
+                populate: {
+                    path: 'profileImage',
+                    model: 'ProfileImage'
+                }
+            })
             .sort({ createdAt: 1 });
 
-        res.status(200).json({
-            success: true,
-            messages
-        });
+res.status(200).json({
+    success: true,
+    messages
+});
 
     } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            success: false,
-            message: 'smt went wrong'
-        })
-    }
+    console.log(error);
+    res.status(500).json({
+        success: false,
+        message: 'smt went wrong'
+    })
+}
 }
 
 module.exports = {

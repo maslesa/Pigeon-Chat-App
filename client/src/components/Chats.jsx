@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from 'axios';
 import NewChat from "./NewChat";
 import JoinChat from "./JoinChat";
@@ -30,6 +30,8 @@ export default function Chats({ selectedChat, setSelectedChat }) {
     const [newNameFirstLetter, setNewNameFirstLetter] = useState(user.nameSurname.charAt(0).toUpperCase());
     const [newUsername, setNewUsername] = useState(user.username);
     const [newUsernameToggle, setNewUsernameToggle] = useState(false);
+    const fileInputRef = useRef(null);
+    const [profileImageURL, setProfileImageURL] = useState(user.profileImage?.url);
 
     const fetchChats = async () => {
         const res = await axios.get(`http://localhost:5000/chat/fetch-all`, axiosConfig);
@@ -66,7 +68,7 @@ export default function Chats({ selectedChat, setSelectedChat }) {
 
     const changeNameSurname = async () => {
         try {
-            if(newNameSurname.length < 3){
+            if (newNameSurname.length < 3) {
                 setAlert({ message: "Full name has to be min 2 characters long", isError: true, duration: 2000 });
                 return;
             }
@@ -83,13 +85,13 @@ export default function Chats({ selectedChat, setSelectedChat }) {
         }
     }
 
-    const changeUsername = async() => {
+    const changeUsername = async () => {
         try {
-            if(newUsername.length < 3){
+            if (newUsername.length < 3) {
                 setAlert({ message: "Full name has to be min 2 characters long", isError: true, duration: 2000 });
                 return;
             }
-            await axios.put(`http://localhost:5000/user/username/change`, {newUsername: newUsername}, axiosConfig);
+            await axios.put(`http://localhost:5000/user/username/change`, { newUsername: newUsername }, axiosConfig);
             setNewUsernameToggle(false);
             user.username = newUsername;
             localStorage.setItem('user', JSON.stringify(user));
@@ -98,6 +100,21 @@ export default function Chats({ selectedChat, setSelectedChat }) {
         } catch (error) {
             console.log(error);
             setAlert({ message: "User with that username already exists!", isError: true, duration: 2000 });
+        }
+    }
+
+    const uploadProfileImage = async (file) => {
+        const formData = new FormData();
+        formData.append('image', file);
+        try {
+            const res = await axios.post(`http://localhost:5000/profileImage/upload`, formData, axiosConfig);
+            const updatedUser = { ...user, profileImage: res.data.image.url };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            setProfileImageURL(res.data.image.url);
+            setAlert({ message: "Profile image updated!", duration: 2000 });
+        } catch (error) {
+            console.log(error);
+            setAlert({ message: "Error uploading profile image!", isError: true, duration: 2000 });
         }
     }
 
@@ -197,10 +214,44 @@ export default function Chats({ selectedChat, setSelectedChat }) {
                     </div>
                     <div className='w-full h-1/2 bg-white flex justify-center items-center relative'>
                         {user.profileImage ? (
-                            <div>SL</div>
+                            <div className="relative w-full h-full group">
+                                <img src={profileImageURL} alt="Profile image" className="w-full h-full object-cover"></img>
+                                <div className="absolute inset-0 bg-myback2/10 backdrop-blur-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        ref={fileInputRef}
+                                        className="hidden"
+                                        onChange={(e) => {
+                                            if (e.target.files.length > 0) {
+                                                uploadProfileImage(e.target.files[0]);
+                                            }
+                                        }}
+                                    />
+                                    <button onClick={() => fileInputRef.current.click()} className="px-4 py-2 bg-white text-myback2 font-semibold rounded-lg shadow duration-200 ease-in-out hover:bg-myback hover:text-white cursor-pointer">
+                                        Change Image
+                                    </button>
+                                </div>
+                            </div>
                         ) : (
-                            <div className='bg-white w-50 h-10 flex items-center justify-center text-myback2 text-7xl font-semibold'>
-                                {newNameFirstLetter}
+                            <div className='relative w-full h-full flex items-center justify-center text-myback2 text-7xl font-semibold group'>
+                                <p>{newNameFirstLetter}</p>
+                                <div className="absolute inset-0 bg-myback2/10 backdrop-blur-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        ref={fileInputRef}
+                                        className="hidden"
+                                        onChange={(e) => {
+                                            if (e.target.files.length > 0) {
+                                                uploadProfileImage(e.target.files[0]);
+                                            }
+                                        }}
+                                    />
+                                    <button onClick={() => fileInputRef.current.click()} className="text-lg px-4 py-2 bg-white text-myback2 font-semibold rounded-lg shadow duration-200 ease-in-out hover:bg-myback hover:text-white cursor-pointer">
+                                        Change Image
+                                    </button>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -211,7 +262,7 @@ export default function Chats({ selectedChat, setSelectedChat }) {
                                 <img onClick={() => setChangeNameSurnameToggle(true)} className="w-5 cursor-pointer duration-200 ease-in-out hover:scale-110" src="/change.png" alt="change" />
                             ) : (
                                 <div className="flex gap-2 items-center">
-                                    <img onClick={() => {setChangeNameSurnameToggle(false); setNewNameSurname(user.nameSurname)}} className="w-8 cursor-pointer duration-200 ease-in-out hover:scale-110" src="/cancel.png" alt="cancel" />
+                                    <img onClick={() => { setChangeNameSurnameToggle(false); setNewNameSurname(user.nameSurname) }} className="w-8 cursor-pointer duration-200 ease-in-out hover:scale-110" src="/cancel.png" alt="cancel" />
                                     <img onClick={changeNameSurname} className="w-7 cursor-pointer duration-200 ease-in-out hover:scale-110" src="/copied.png" alt="change" />
                                 </div>
                             )}
@@ -222,7 +273,7 @@ export default function Chats({ selectedChat, setSelectedChat }) {
                                 <img onClick={() => setNewUsernameToggle(true)} className="w-5 cursor-pointer duration-200 ease-in-out hover:scale-110" src="/change.png" alt="change" />
                             ) : (
                                 <div className="flex gap-2 items-center">
-                                    <img onClick={() => {setNewUsernameToggle(false); setNewUsername(user.username)}} className="w-8 cursor-pointer duration-200 ease-in-out hover:scale-110" src="/cancel.png" alt="cancel" />
+                                    <img onClick={() => { setNewUsernameToggle(false); setNewUsername(user.username) }} className="w-8 cursor-pointer duration-200 ease-in-out hover:scale-110" src="/cancel.png" alt="cancel" />
                                     <img onClick={changeUsername} className="w-7 cursor-pointer duration-200 ease-in-out hover:scale-110" src="/copied.png" alt="change" />
                                 </div>
                             )}

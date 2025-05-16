@@ -39,7 +39,7 @@ export default function Chat({ selectedChat }) {
         }
     };
 
-    const fetchChatMembers = async() => {
+    const fetchChatMembers = async () => {
         const res = await axios.get(`http://localhost:5000/chat/fetch-members/${selectedChat._id}`, axiosConfig);
         setChatMembers(res.data.members);
     }
@@ -175,15 +175,15 @@ export default function Chat({ selectedChat }) {
                                             {chatMembers && chatMembers.map((member) => {
                                                 const isMe = member._id === user._id;
                                                 return <div key={member._id} className='p-3 flex gap-3 items-center justify-baseline cursor-pointer duration-200 ease-in-out hover:bg-myback2 rounded-xl'>
-                                                            {member.profileImage ? (
-                                                                <div>sl</div>
-                                                            ) : (
-                                                                <div className='bg-white w-10 h-10 rounded-full flex items-center justify-center text-myback2 text-xl font-semibold'>
-                                                                    {member.nameSurname[0]}
-                                                                </div>
-                                                            )}
-                                                            {isMe ? (<p>Me</p>) : (<p>{member.username}</p>)}
-                                                        </div>;
+                                                    {member.profileImage ? (
+                                                        <div>sl</div>
+                                                    ) : (
+                                                        <div className='bg-white w-10 h-10 rounded-full flex items-center justify-center text-myback2 text-xl font-semibold'>
+                                                            {member.nameSurname[0]}
+                                                        </div>
+                                                    )}
+                                                    {isMe ? (<p>Me</p>) : (<p>{member.username}</p>)}
+                                                </div>;
                                             })}
                                         </div>
                                     </div>
@@ -232,7 +232,7 @@ export default function Chat({ selectedChat }) {
                                 </div>
                                 {moreOptions && (
                                     <div className='absolute p-3 flex flex-col gap-1 justify-center items-center font-roboto text-white top-22 right-0 w-50 h-45 bg-myback border-4 border-myback2 rounded-2xl z-100'>
-                                        <div onClick={() => {setMoreOptions(false);setGroupInfo(true);}} className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
+                                        <div onClick={() => { setMoreOptions(false); setGroupInfo(true); }} className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
                                             <img className='w-5' src="/info.png" alt="info" />
                                             <p>Group info</p>
                                         </div>
@@ -263,9 +263,13 @@ export default function Chat({ selectedChat }) {
                                             return (
                                                 <div key={msg._id} className={`flex mb-2 items-end ${isMe ? 'justify-end' : 'justify-start'}`}>
                                                     {!isMe && (
-                                                        <div className="w-10 h-10 bg-white rounded-full mr-2 flex justify-center items-center font-roboto font-bold text-lg">
-                                                            {msg.sentBy.username.charAt(0).toUpperCase()}
-                                                        </div>
+                                                        msg.sentBy.profileImage?.url ? (
+                                                            <img src={msg.sentBy.profileImage.url} alt="Profile" className="w-10 h-10 object-cover rounded-full mr-2" />
+                                                        ) : (
+                                                            <div className="w-10 h-10 bg-white rounded-full mr-2 flex justify-center items-center font-roboto font-bold text-lg">
+                                                                {msg.sentBy.username.charAt(0).toUpperCase()}
+                                                            </div>
+                                                        )
                                                     )}
                                                     <div
                                                         className={`relative min-w-[150px] max-w-xs px-4 py-2 pr-20 rounded-2xl text-white text-sm shadow ${isMe
