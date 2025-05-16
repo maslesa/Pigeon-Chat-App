@@ -10,18 +10,25 @@ Pigeon is a real-time group chat application where users can communicate via mes
 
 - 📝 **User Authentication**  
   Register and securely log in to the app.
+  
 - 👤 **Profile Management**  
   Upload profile images, change your name and password.
+  
 - 💬 **Real-Time Group Chat**  
   Send and receive messages in real-time using Socket.IO.
+  
 - 🧑‍💼 **Admin Controls**  
   Admins can remove users from the group chat.
+  
 - 🖼️ **Group Customization**  
   Users can change the group chat title and image.
+  
 - 📷 **Image Messaging**  
   Send and receive images in the group chat.
+  
 - 🗒️ **Personal Notes**  
   Users can write and save personal notes.
+  
 - 🤖 **Pidgey AI Chat Bot**  
   Ask questions and interact with the AI assistant.
 
