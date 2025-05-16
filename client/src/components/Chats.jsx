@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from 'axios';
 import NewChat from "./NewChat";
 import JoinChat from "./JoinChat";
+import Alert from "./Alert";
 import { useNavigate } from 'react-router-dom'
 
 export default function Chats({ selectedChat, setSelectedChat }) {
@@ -12,6 +13,7 @@ export default function Chats({ selectedChat, setSelectedChat }) {
     const axiosConfig = { headers: { Authorization: `Bearer ${token}` } }
     const user = JSON.parse(localStorage.getItem('user'));
 
+    const [alert, setAlert] = useState(null);
     const [chats, setChats] = useState([]);
     const [newChatDialog, setNewChatDialog] = useState(false);
     const [joinChatDialog, setJoinChatDiaog] = useState(false);
@@ -19,6 +21,10 @@ export default function Chats({ selectedChat, setSelectedChat }) {
     const [userMenu, setUserMenu] = useState(false);
     const [accountSettings, setAccountSettings] = useState(false);
     const [securitySettings, setSecuritySettings] = useState(false);
+
+    const [oldPassword, setOldPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
     const fetchChats = async () => {
         const res = await axios.get(`http://localhost:5000/chat/fetch-all`, axiosConfig);
@@ -34,6 +40,23 @@ export default function Chats({ selectedChat, setSelectedChat }) {
         });
 
         setChats(sortedChats);
+    }
+
+    const changePassword = async () => {
+        try {
+            if(newPassword != confirmNewPassword){
+                setAlert({ message: "New passwords don't match", isError: true, duration: 2000 });
+                return;
+            }
+            await axios.put(`http://localhost:5000/user/password/change`, {oldPassword, newPassword}, axiosConfig);
+            setAlert({ message: "Password changed successfully!", duration: 2000 });
+            setOldPassword('');
+            setNewPassword('');
+            setConfirmNewPassword('');
+        } catch (error) {
+            console.log(error);
+            setAlert({ message: "Invalid new password!", isError: true, duration: 2000 });
+        }
     }
 
     useEffect(() => {
@@ -75,6 +98,14 @@ export default function Chats({ selectedChat, setSelectedChat }) {
 
     return (
         <div className="w-1/4 h-full flex flex-col bg-myback shadow-2xl border-r-1 border-white relative">
+            {alert && (
+                <Alert
+                message={alert.message}
+                isError={alert.isError}
+                duration={alert.duration}
+                onClose={() => setAlert(null)}
+                />
+            )}
             {userMenu && (
                 <div onClick={() => setUserMenu(false)} className="w-full h-full absolute bg-myback250 z-200">
                     <div onClick={(e) => e.stopPropagation()} className="flex flex-col p-3 absolute left-4 top-15 w-60 bg-myback border-4 border-myback2 rounded-2xl font-roboto text-white">
@@ -83,7 +114,7 @@ export default function Chats({ selectedChat, setSelectedChat }) {
                             <p>Account settings</p>
                         </div>
                         <hr className='w-full h-1 border-0 bg-myback2 mt-1 mb-1 rounded-2xl' />
-                        <div onClick={() => {setSecuritySettings(true); setUserMenu(false);}} className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
+                        <div onClick={() => { setSecuritySettings(true); setUserMenu(false); }} className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
                             <img className='w-5' src="/password.png" alt="acc" />
                             <p>Security settings</p>
                         </div>
@@ -157,19 +188,19 @@ export default function Chats({ selectedChat, setSelectedChat }) {
                         <div className="flex flex-col gap-5 pl-5">
                             <div className="flex flex-col gap-1">
                                 <label className="font-semibold cursor-pointer" htmlFor="oldpass">Old password</label>
-                                <input id="oldpass" className="w-full border-2 border-white p-2 rounded-lg outline-0 pl-3" type="password" placeholder="Enter old password" />
+                                <input value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} id="oldpass" className="w-full border-2 border-white p-2 rounded-lg outline-0 pl-3" type="password" placeholder="Enter old password" />
                             </div>
                             <div className="flex flex-col gap-1">
                                 <label className="font-semibold cursor-pointer" htmlFor="newpass">New password</label>
-                                <input id="newpass" className="w-full border-2 border-white p-2 rounded-lg outline-0 pl-3" type="password" placeholder="Enter new password" />
+                                <input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} id="newpass" className="w-full border-2 border-white p-2 rounded-lg outline-0 pl-3" type="password" placeholder="Enter new password" />
                             </div>
                             <div className="flex flex-col gap-1">
                                 <label className="font-semibold cursor-pointer" htmlFor="confnewpass">Confirm new password</label>
-                                <input id="confnewpass" className="w-full border-2 border-white p-2 rounded-lg outline-0 pl-3" type="password" placeholder="Confirm new password" />
+                                <input value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} id="confnewpass" className="w-full border-2 border-white p-2 rounded-lg outline-0 pl-3" type="password" placeholder="Confirm new password" />
                             </div>
                         </div>
                         <div className="flex justify-center items-center p-5">
-                            <div className="p-3 pl-5 pr-5 border-2 rounded-xl duration-200 ease-in-out hover:bg-white hover:text-myback cursor-pointer">
+                            <div onClick={changePassword} className="p-3 pl-5 pr-5 border-2 rounded-xl duration-200 ease-in-out hover:bg-white hover:text-myback cursor-pointer">
                                 Change password
                             </div>
                         </div>

@@ -2,12 +2,12 @@ const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const userRegister = async(req, res) => {
+const userRegister = async (req, res) => {
     try {
-        const {nameSurname, username, password} = req.body;
+        const { nameSurname, username, password } = req.body;
 
-        const userExists = await User.findOne({username});
-        if(userExists){
+        const userExists = await User.findOne({ username });
+        if (userExists) {
             return res.status(401).json({
                 success: false,
                 message: 'User with that username already exists'
@@ -25,13 +25,13 @@ const userRegister = async(req, res) => {
 
         await newUser.save();
 
-        if(newUser){
+        if (newUser) {
             res.status(200).json({
                 success: true,
                 message: 'User registered successfully',
                 data: newUser
             })
-        }else{
+        } else {
             res.status(400).json({
                 success: false,
                 message: 'User could not be created'
@@ -46,11 +46,11 @@ const userRegister = async(req, res) => {
     }
 }
 
-const userLogin = async(req, res) => {
+const userLogin = async (req, res) => {
     try {
-        const {username, password} = req.body;
-        const user = await User.findOne({username});
-        if(!user){
+        const { username, password } = req.body;
+        const user = await User.findOne({ username });
+        if (!user) {
             return res.status(404).json({
                 success: false,
                 message: 'User with that username does not exist'
@@ -58,7 +58,7 @@ const userLogin = async(req, res) => {
         }
 
         const passwordsMatch = await bcrypt.compare(password, user.password);
-        if(!passwordsMatch){
+        if (!passwordsMatch) {
             return res.status(404).json({
                 success: false,
                 message: 'Incorrect password'
@@ -69,12 +69,12 @@ const userLogin = async(req, res) => {
             id: user._id,
             nameSurname: user.nameSurname,
             username: user.username,
-        }, process.env.JWT_TOKEN,{
+        }, process.env.JWT_TOKEN, {
             expiresIn: '1h'
         });
 
         res.status(200).json({
-            success: true, 
+            success: true,
             message: 'user logged in successfully',
             data: user,
             token: token
@@ -89,7 +89,67 @@ const userLogin = async(req, res) => {
     }
 }
 
+const changePassword = async (req, res) => {
+    try {
+        const { oldPassword, newPassword } = req.body;
+
+        if(!oldPassword || !newPassword){
+            return res.status(400).json({
+                success: false,
+                message: 'old password or new password is undefined'
+            })
+        }
+
+        const strongPasswordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+
+        if (!strongPasswordRegex.test(newPassword)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Password must be at least 8 characters long, include a number and an uppercase letter.'
+            });
+        }
+
+        const userId = req.userInfo.id;
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User with that ID not found'
+            })
+        }
+
+        //check if old password is match
+        const passwordMatches = await bcrypt.compare(oldPassword, user.password);
+        if (!passwordMatches) {
+            return res.status(400).json({
+                success: false,
+                message: 'Old password is incorrect'
+            })
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        user.password = hashedPassword;
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Password is updated successfully'
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: 'Something went wrong',
+        })
+    }
+}
+
 module.exports = {
     userRegister,
     userLogin,
+    changePassword,
 }
