@@ -191,7 +191,7 @@ export default function Chats({ selectedChat, setSelectedChat }) {
                                 <img onClick={() => setChangeNameSurnameToggle(true)} className="w-5 cursor-pointer duration-200 ease-in-out hover:scale-110" src="/change.png" alt="change" />
                             ) : (
                                 <div className="flex gap-2 items-center">
-                                    <img onClick={() => setChangeNameSurnameToggle(false)} className="w-8 cursor-pointer duration-200 ease-in-out hover:scale-110" src="/cancel.png" alt="cancel" />
+                                    <img onClick={() => {setChangeNameSurnameToggle(false); setNewNameSurname(user.nameSurname)}} className="w-8 cursor-pointer duration-200 ease-in-out hover:scale-110" src="/cancel.png" alt="cancel" />
                                     <img onClick={changeNameSurname} className="w-7 cursor-pointer duration-200 ease-in-out hover:scale-110" src="/copied.png" alt="change" />
                                 </div>
                             )}
