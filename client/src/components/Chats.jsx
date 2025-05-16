@@ -28,6 +28,8 @@ export default function Chats({ selectedChat, setSelectedChat }) {
     const [changeNameSurnameToggle, setChangeNameSurnameToggle] = useState(false);
     const [newNameSurname, setNewNameSurname] = useState(user.nameSurname);
     const [newNameFirstLetter, setNewNameFirstLetter] = useState(user.nameSurname.charAt(0).toUpperCase());
+    const [newUsername, setNewUsername] = useState(user.username);
+    const [newUsernameToggle, setNewUsernameToggle] = useState(false);
 
     const fetchChats = async () => {
         const res = await axios.get(`http://localhost:5000/chat/fetch-all`, axiosConfig);
@@ -65,7 +67,7 @@ export default function Chats({ selectedChat, setSelectedChat }) {
     const changeNameSurname = async () => {
         try {
             if(newNameSurname.length < 3){
-                setAlert({ message: "Full name has to be min 3 characters long", isError: true, duration: 2000 });
+                setAlert({ message: "Full name has to be min 2 characters long", isError: true, duration: 2000 });
                 return;
             }
             await axios.put(`http://localhost:5000/user/nameSurname/change`, { newNameSurname }, axiosConfig);
@@ -78,6 +80,24 @@ export default function Chats({ selectedChat, setSelectedChat }) {
         } catch (error) {
             console.log(error);
             setAlert({ message: "Invalid new full name format!", isError: true, duration: 2000 });
+        }
+    }
+
+    const changeUsername = async() => {
+        try {
+            if(newUsername.length < 3){
+                setAlert({ message: "Full name has to be min 2 characters long", isError: true, duration: 2000 });
+                return;
+            }
+            await axios.put(`http://localhost:5000/user/username/change`, {newUsername: newUsername}, axiosConfig);
+            setNewUsernameToggle(false);
+            user.username = newUsername;
+            localStorage.setItem('user', JSON.stringify(user));
+            setAlert({ message: "Username changed successfully!", duration: 2000 });
+            setNewUsername(user.username);
+        } catch (error) {
+            console.log(error);
+            setAlert({ message: "User with that username already exists!", isError: true, duration: 2000 });
         }
     }
 
@@ -184,7 +204,7 @@ export default function Chats({ selectedChat, setSelectedChat }) {
                             </div>
                         )}
                     </div>
-                    <div className="flex flex-col gap-2 w-full p-5">
+                    <div className="flex flex-col gap-1 w-full p-5">
                         <div className="flex w-full items-center justify-between">
                             <input disabled={!changeNameSurnameToggle} className={`text-2xl max-w-3/4 p-2 pl-3 outline-0  ${changeNameSurnameToggle && 'border-2 border-white rounded-lg'}`} type="text" value={newNameSurname} onChange={(e) => setNewNameSurname(e.target.value)} />
                             {!changeNameSurnameToggle ? (
@@ -196,7 +216,17 @@ export default function Chats({ selectedChat, setSelectedChat }) {
                                 </div>
                             )}
                         </div>
-                        <p className="text-lg opacity-50">{user.username}</p>
+                        <div className="flex w-full items-center justify-between">
+                            <input disabled={!newUsernameToggle} className={`text-lg opacity-50 max-w-3/4 p-1 pl-3 outline-0  ${newUsernameToggle && 'border-2 border-white rounded-lg opacity-100'}`} type="text" value={newUsername} onChange={(e) => setNewUsername(e.target.value)} />
+                            {!newUsernameToggle ? (
+                                <img onClick={() => setNewUsernameToggle(true)} className="w-5 cursor-pointer duration-200 ease-in-out hover:scale-110" src="/change.png" alt="change" />
+                            ) : (
+                                <div className="flex gap-2 items-center">
+                                    <img onClick={() => {setNewUsernameToggle(false); setNewUsername(user.username)}} className="w-8 cursor-pointer duration-200 ease-in-out hover:scale-110" src="/cancel.png" alt="cancel" />
+                                    <img onClick={changeUsername} className="w-7 cursor-pointer duration-200 ease-in-out hover:scale-110" src="/copied.png" alt="change" />
+                                </div>
+                            )}
+                        </div>
                     </div>
                     <div className="absolute p-5 bottom-0 flex w-full">
                         <div onClick={() => navigate('/login')} className="flex gap-2 w-full p-3 items-center justify-baseline rounded-lg duration-200 ease-in-out hover:bg-myback2 cursor-pointer">

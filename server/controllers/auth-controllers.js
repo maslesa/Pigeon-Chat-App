@@ -187,9 +187,58 @@ const changeNameSurname = async(req, res) => {
     }
 }
 
+const changeUsername = async(req, res) => {
+    try {
+        const {newUsername} = req.body;
+        const userId = req.userInfo.id;
+        const user = await User.findById(userId);
+
+        if(user.username === newUsername){
+            return res.status(200).json({
+                success: true,
+                message: 'Username updated successfully'
+            })
+        }
+
+        const usernameExists = await User.findOne({
+            username : newUsername
+        });
+
+        if(usernameExists){
+            return res.status(400).json({
+                success: false,
+                message: 'User with that username already exists'
+            })
+        }
+
+        if(!user){
+            return res.status(404).json({
+                success: false,
+                message: 'User with that Id is not found'
+            })
+        }
+
+        user.username = newUsername;
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Username updated successfully'
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: 'Something went wrong',
+        })
+    }
+}
+
 module.exports = {
     userRegister,
     userLogin,
     changePassword,
     changeNameSurname,
+    changeUsername,
 }
