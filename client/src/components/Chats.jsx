@@ -108,10 +108,10 @@ export default function Chats({ selectedChat, setSelectedChat }) {
         formData.append('image', file);
         try {
             const res = await axios.post(`http://localhost:5000/image/upload`, formData, axiosConfig);
-            const updatedUser = { ...user, profileImage: res.data.image.url };
-            localStorage.setItem('user', JSON.stringify(updatedUser));
-            setProfileImageURL(res.data.image.url);
-            setAlert({ message: "Profile image updated!", duration: 2000 });
+            setAlert({ message: "Profile image updated!", duration: 1000 });
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
         } catch (error) {
             console.log(error);
             setAlert({ message: "Error uploading profile image!", isError: true, duration: 2000 });
