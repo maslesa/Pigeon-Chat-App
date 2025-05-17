@@ -33,6 +33,8 @@ export default function Chat({ selectedChat }) {
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
     const [chatImageURL, setChatImageURL] = useState(selectedChat?.backgroundImage?.url);
+    const [groupTitle, setGroupTitle] = useState(selectedChat?.title);
+    const [titleChange, setTitleChange] = useState(false);
 
     const handleLeaveSuccess = () => {
         if (typeof window.updateChatList === 'function') {
@@ -61,16 +63,27 @@ export default function Chat({ selectedChat }) {
         formData.append('chatImage', file);
         try {
             const res = await axios.post(`http://localhost:5000/image/upload/chat/${selectedChat._id}`, formData, axiosConfig);
-            setAlert({ message: "Group image updated!", duration: 2000 });
+            setAlert({ message: "Group image updated!", duration: 1000 });
             setTimeout(() => {
-                const updatedUser = { ...user, profileImage: res.data.chatImage.url };
-                localStorage.setItem('user', JSON.stringify(updatedUser));
                 setChatImageURL(res.data.chatImage.url);
                 window.location.reload();
-            }, 2000);
+            }, 1000);
         } catch (error) {
             console.log(error);
             setAlert({ message: "Error uploading group image!", isError: true, duration: 2000 });
+        }
+    }
+
+    const changeChatTitle = async() => {
+        try {
+            await axios.put(`http://localhost:5000/chat/change/title/${selectedChat._id}`, {newTitle: groupTitle}, axiosConfig);
+            setAlert({ message: "Group title updated!", duration: 1000 });
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } catch (error) {
+            console.log(error);
+            setAlert({ message: "Error changing group title!", isError: true, duration: 2000 });
         }
     }
 
@@ -88,11 +101,12 @@ export default function Chat({ selectedChat }) {
         setInvitationDialog(false);
         setMoreOptions(false);
         setLeaveGroup(false);
-        setGroupInfo(false);
         setChatImageURL(selectedChat?.backgroundImage?.url);
 
         fetchPreviousChatMessages();
         fetchChatMembers();
+        setGroupTitle(selectedChat.title);
+        setTitleChange(false);
 
         setMembers(selectedChat.members.length);
 
@@ -219,9 +233,19 @@ export default function Chat({ selectedChat }) {
                                                 </div>
                                             </div>
                                         )}
-                                        <div className='w-full p-3 pt-10 bg-[linear-gradient(to_top,_var(--color-myback2)_0%,_var(--color-myback2)_0%,_transparent_100%)] pl-5 flex flex-col justify-center items-baseline absolute bottom-0'>
-                                            <p className='text-2xl font-semibold'>{selectedChat.title}</p>
-                                            <p className='text-sm opacity-80'>{members} {members === 1 ? 'member' : 'members'}</p>
+                                        <div className='w-full p-3 pt-10 bg-[linear-gradient(to_top,_var(--color-myback2)_0%,_var(--color-myback2)_0%,_transparent_100%)] pl-2 pr-6 flex flex-col justify-center items-baseline absolute bottom-0'>
+                                            <div className='w-full flex gap-3 items-center justify-between mb-1 pl-1'>
+                                                <input value={groupTitle} disabled={!titleChange} className={`font-roboto text-2xl max-w-2/3 pl-3 pb-2 pt-2 rounded-lg outline-0 ${titleChange && ('border-2 border-white')}`} type="text" onChange={(e) => { setGroupTitle(e.target.value) }} />
+                                                {!titleChange ? (
+                                                    <img onClick={() => setTitleChange(true)} className="w-5 cursor-pointer duration-200 ease-in-out hover:scale-110" src="/change.png" alt="change" />
+                                                ) : (
+                                                    <div className="flex gap-2 items-center">
+                                                        <img onClick={() => { setTitleChange(false); setGroupTitle(selectedChat.title);}} className="w-8 cursor-pointer duration-200 ease-in-out hover:scale-110" src="/cancel.png" alt="cancel" />
+                                                        <img onClick={changeChatTitle} className="w-7 cursor-pointer duration-200 ease-in-out hover:scale-110" src="/copied.png" alt="change" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <p className='text-sm opacity-80 pl-4'>{members} {members === 1 ? 'member' : 'members'}</p>
                                         </div>
                                     </div>
                                     <div className='w-full p-3 pl-5 pr-5 flex items-center justify-between'>

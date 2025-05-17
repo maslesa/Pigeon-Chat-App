@@ -4,7 +4,7 @@ const router = express.Router();
 const isLoggedIn = require('../middlewares/isLoggedInMiddleware');
 const { isChatMember } = require('../middlewares/chatMiddleware');
 
-const {chatCreate, chatFetchAll, chatJoin, sendMessage, leaveChat, fetchMembers} = require('../controllers/chat-controllers');
+const {chatCreate, chatFetchAll, chatJoin, sendMessage, leaveChat, fetchMembers, changeTitle} = require('../controllers/chat-controllers');
 const {fetchAllMessages} = require('../controllers/message-controller')
 
 
@@ -15,5 +15,6 @@ router.get('/get-messages/:chatId', isLoggedIn, isChatMember, fetchAllMessages);
 router.put('/join/:chatId', isLoggedIn, chatJoin);
 router.put('/send-message/:chatId', isLoggedIn, isChatMember, sendMessage);
 router.put('/leave/:chatId', isLoggedIn, isChatMember, leaveChat);
+router.put('/change/title/:chatId', isLoggedIn, isChatMember, changeTitle);
 
 module.exports = router;

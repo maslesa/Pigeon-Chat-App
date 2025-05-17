@@ -224,6 +224,44 @@ const fetchMembers = async (req, res) => {
     }
 }
 
+const changeTitle = async(req, res) => {
+    try {
+        const chatId = req.params.chatId;
+        const chat = await Chat.findById(chatId);
+
+        if(!chat){
+            return res.status(404).json({
+                success: false,
+                message: 'chat with that Id not found'
+            })
+        }
+
+        const {newTitle} = req.body;
+
+        if(newTitle.length < 3){
+            return res.status(400).json({
+                success: false,
+                message: 'title has to be min 3 chars long'
+            })
+        }
+
+        chat.title = newTitle;
+        await chat.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'chat title updated succcessfully'
+        })
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: 'Something went wrong',
+        });
+    }
+}
+
 
 
 module.exports = {
@@ -233,4 +271,5 @@ module.exports = {
     sendMessage,
     leaveChat,
     fetchMembers,
+    changeTitle,
 }
