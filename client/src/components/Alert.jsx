@@ -20,7 +20,7 @@ const Alert = ({message, isError, duration = 3000, onClose}) => {
     const bgColor = isError ? "bg-red-700" : "bg-green-600";
 
     return (
-        <div className={`fixed top-5 right-5 ${bgColor} text-white px-4 py-2 rounded-lg shadow-lg z-50`}>
+        <div className={`fixed top-5 right-5 ${bgColor} text-white px-4 py-2 rounded-lg shadow-lg z-400`}>
           {message}
         </div>
     );

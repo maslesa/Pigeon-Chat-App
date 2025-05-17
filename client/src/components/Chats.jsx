@@ -107,7 +107,7 @@ export default function Chats({ selectedChat, setSelectedChat }) {
         const formData = new FormData();
         formData.append('image', file);
         try {
-            const res = await axios.post(`http://localhost:5000/profileImage/upload`, formData, axiosConfig);
+            const res = await axios.post(`http://localhost:5000/image/upload`, formData, axiosConfig);
             const updatedUser = { ...user, profileImage: res.data.image.url };
             localStorage.setItem('user', JSON.stringify(updatedUser));
             setProfileImageURL(res.data.image.url);
@@ -359,8 +359,8 @@ export default function Chats({ selectedChat, setSelectedChat }) {
                                                          rounded-2xl  ${selectedChat && selectedChat._id === chat._id ? 'bg-myback2' : 'hover:bg-black50'}`}>
                                 <div className="min-w-13 h-13 bg-white flex justify-center items-center rounded-full">
                                     {chat.backgroundImage ? (
-                                        <div>
-                                            SL
+                                        <div className="w-13 h-13 bg-myback flex justify-center items-center rounded-full">
+                                            <img className="w-13 h-13 object-cover rounded-full" src={chat.backgroundImage.url} alt="chatimg" />
                                         </div>
                                     ) : (
                                         <img className="w-5" src="group-chat.png" alt="" />

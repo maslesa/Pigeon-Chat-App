@@ -9,7 +9,7 @@ const Chat = require('./models/Chat');
 
 const authRoutes = require('./routes/auth-routes');
 const chatRoutes = require('./routes/chat-routes');
-const profileImageRoutes = require('./routes/profileImage-routes');
+const imageRoutes = require('./routes/image-routes');
 
 const PORT = process.env.PORT;
 const app = express();
@@ -22,7 +22,7 @@ app.use(cors());
 app.use(express.json());
 app.use('/user', authRoutes);
 app.use('/chat', chatRoutes);
-app.use('/profileImage', profileImageRoutes);
+app.use('/image', imageRoutes);
 
 io.on('connection', (socket) => {
 

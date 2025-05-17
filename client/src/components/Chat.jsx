@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import axios from 'axios';
 import YesNoDialog from './YesNoDialog';
+import Alert from './Alert';
 
 const socket = io('http://localhost:5000');
 
@@ -24,11 +25,14 @@ export default function Chat({ selectedChat }) {
         setTimeout(() => setCopied(false), 2000);
     };
 
+    const [alert, setAlert] = useState(null);
     const [invitationDialog, setInvitationDialog] = useState(false);
     const [moreOptions, setMoreOptions] = useState(false);
     const [leaveGroup, setLeaveGroup] = useState(false);
     const [groupInfo, setGroupInfo] = useState(false);
     const messagesEndRef = useRef(null);
+    const fileInputRef = useRef(null);
+    const [chatImageURL, setChatImageURL] = useState(selectedChat?.backgroundImage?.url);
 
     const handleLeaveSuccess = () => {
         if (typeof window.updateChatList === 'function') {
@@ -52,6 +56,24 @@ export default function Chat({ selectedChat }) {
         setMessages(previousMessages.data.messages);
     };
 
+    const uploadChatImage = async (file) => {
+        const formData = new FormData();
+        formData.append('chatImage', file);
+        try {
+            const res = await axios.post(`http://localhost:5000/image/upload/chat/${selectedChat._id}`, formData, axiosConfig);
+            setAlert({ message: "Group image updated!", duration: 2000 });
+            setTimeout(() => {
+                const updatedUser = { ...user, profileImage: res.data.chatImage.url };
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+                setChatImageURL(res.data.chatImage.url);
+                window.location.reload();
+            }, 2000);
+        } catch (error) {
+            console.log(error);
+            setAlert({ message: "Error uploading group image!", isError: true, duration: 2000 });
+        }
+    }
+
     const invitationCredentials = selectedChat && `chat_id: ${selectedChat._id} | passcode: ${selectedChat.passcode}`;
 
     useEffect(() => {
@@ -67,6 +89,7 @@ export default function Chat({ selectedChat }) {
         setMoreOptions(false);
         setLeaveGroup(false);
         setGroupInfo(false);
+        setChatImageURL(selectedChat?.backgroundImage?.url);
 
         fetchPreviousChatMessages();
         fetchChatMembers();
@@ -131,6 +154,14 @@ export default function Chat({ selectedChat }) {
 
     return (
         <>
+            {alert && (
+                <Alert
+                    message={alert.message}
+                    isError={alert.isError}
+                    duration={alert.duration}
+                    onClose={() => setAlert(null)}
+                />
+            )}
             <div className="flex flex-col max-h-screen flex-1 bg-myback2 justify-baseline items-center relative bg-cover bg-center" style={{ backgroundImage: "url('/background.png')" }} >
                 {selectedChat && (
                     <>
@@ -148,9 +179,45 @@ export default function Chat({ selectedChat }) {
                                     </div>
                                     <div className='w-full h-1/2 bg-white flex justify-center items-center relative'>
                                         {selectedChat.backgroundImage ? (
-                                            <div>SL</div>
+                                            <div className="w-full h-full flex justify-center items-center group">
+                                                <img className="w-full h-full object-cover" src={chatImageURL} alt="chatimg" />
+                                                <div className="absolute inset-0 bg-myback2/10 backdrop-blur-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        ref={fileInputRef}
+                                                        className="hidden"
+                                                        onChange={(e) => {
+                                                            if (e.target.files.length > 0) {
+                                                                uploadChatImage(e.target.files[0]);
+                                                            }
+                                                        }}
+                                                    />
+                                                    <button onClick={() => fileInputRef.current.click()} className="text-lg px-4 py-2 bg-white text-myback2 font-semibold rounded-lg shadow duration-200 ease-in-out hover:bg-myback hover:text-white cursor-pointer">
+                                                        Change Image
+                                                    </button>
+                                                </div>
+                                            </div>
                                         ) : (
-                                            <img className="w-25" src="group-chat.png" alt="" />
+                                            <div className="w-full h-full flex justify-center items-center group">
+                                                <img className="w-25" src="group-chat.png" alt="" />
+                                                <div className="absolute inset-0 bg-myback2/10 backdrop-blur-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        ref={fileInputRef}
+                                                        className="hidden"
+                                                        onChange={(e) => {
+                                                            if (e.target.files.length > 0) {
+                                                                uploadChatImage(e.target.files[0]);
+                                                            }
+                                                        }}
+                                                    />
+                                                    <button onClick={() => fileInputRef.current.click()} className="text-lg px-4 py-2 bg-white text-myback2 font-semibold rounded-lg shadow duration-200 ease-in-out hover:bg-myback hover:text-white cursor-pointer">
+                                                        Change Image
+                                                    </button>
+                                                </div>
+                                            </div>
                                         )}
                                         <div className='w-full p-3 pt-10 bg-[linear-gradient(to_top,_var(--color-myback2)_0%,_var(--color-myback2)_0%,_transparent_100%)] pl-5 flex flex-col justify-center items-baseline absolute bottom-0'>
                                             <p className='text-2xl font-semibold'>{selectedChat.title}</p>
@@ -176,7 +243,7 @@ export default function Chat({ selectedChat }) {
                                                 const isMe = member._id === user._id;
                                                 return <div key={member._id} className='p-3 flex gap-3 items-center justify-baseline cursor-pointer duration-200 ease-in-out hover:bg-myback2 rounded-xl'>
                                                     {member.profileImage ? (
-                                                        <div>sl</div>
+                                                        <img src={member.profileImage.url} alt="Profile" className="w-10 h-10 object-cover rounded-full mr-2" />
                                                     ) : (
                                                         <div className='bg-white w-10 h-10 rounded-full flex items-center justify-center text-myback2 text-xl font-semibold'>
                                                             {member.nameSurname[0]}
@@ -194,7 +261,9 @@ export default function Chat({ selectedChat }) {
                             <div className="h-20 flex gap-3 items-center justify-baseline shadow-lg">
                                 <div onClick={() => setGroupInfo(true)} className="w-12 h-12 bg-white flex justify-center items-center rounded-full cursor-pointer">
                                     {selectedChat.backgroundImage ? (
-                                        <div>SL</div>
+                                        <div className="w-13 h-13 rounded-full">
+                                            <img className="w-13 h-13 object-cover rounded-full" src={chatImageURL} alt="chatimg" />
+                                        </div>
                                     ) : (
                                         <img className="w-5" src="group-chat.png" alt="" />
                                     )}

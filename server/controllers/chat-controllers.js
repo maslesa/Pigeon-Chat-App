@@ -9,9 +9,9 @@ function generatePasscode(length = 16) {
 }
 
 
-const chatCreate = async(req, res) => {
+const chatCreate = async (req, res) => {
     try {
-        const {title} = req.body;
+        const { title } = req.body;
         const userId = req.userInfo.id;
 
         const passcode = generatePasscode();
@@ -41,21 +41,25 @@ const chatCreate = async(req, res) => {
     }
 }
 
-const chatFetchAll = async(req, res) => {
+const chatFetchAll = async (req, res) => {
     try {
         const userId = req.userInfo.id;
 
-        const chats = await Chat.find({members: userId})
-                                .populate({
-                                    path: 'messages',
-                                    select: 'body createdAt sentBy',
-                                    populate: {
-                                        path: 'sentBy',
-                                       select: 'username _id'
-                                    }
-                                });
+        const chats = await Chat.find({ members: userId })
+            .populate({
+                path: 'messages',
+                select: 'body createdAt sentBy',
+                populate: {
+                    path: 'sentBy',
+                    select: 'username _id'
+                }
+            })
+            .populate({
+                path: 'backgroundImage',
+                select: 'url public_id'
+            });
 
-        if(chats.length === 0){
+        if (chats.length === 0) {
             return res.status(200).json({
                 success: true,
                 message: 'No chats found',
@@ -77,17 +81,17 @@ const chatFetchAll = async(req, res) => {
     }
 }
 
-const chatJoin = async(req, res) => {
+const chatJoin = async (req, res) => {
     try {
         const userId = req.userInfo.id;
         const chatId = req.params.chatId;
-        const {passcode} = req.body;
+        const { passcode } = req.body;
 
         const chat = await Chat.findById(chatId);
 
         const passcodeMatches = chat.passcode === passcode;
 
-        if(!passcodeMatches){
+        if (!passcodeMatches) {
             return res.status(401).json({
                 success: false,
                 message: 'Incorrect passcode'
@@ -96,8 +100,8 @@ const chatJoin = async(req, res) => {
 
         const updatedChat = await Chat.findByIdAndUpdate(
             chatId,
-            {$addToSet : { members: userId }},
-            {new: true}
+            { $addToSet: { members: userId } },
+            { new: true }
         )
 
         if (!updatedChat) {
@@ -122,13 +126,13 @@ const chatJoin = async(req, res) => {
     }
 }
 
-const sendMessage = async(req, res) => {
+const sendMessage = async (req, res) => {
     try {
-        const userId = req.userInfo.id; 
-        const {message} = req.body;
+        const userId = req.userInfo.id;
+        const { message } = req.body;
         const chatId = req.params.chatId;
-    
-        const newMessage = await createMessage({chatId, userId, message});
+
+        const newMessage = await createMessage({ chatId, userId, message });
 
         res.status(200).json({
             success: true,
@@ -187,19 +191,19 @@ const leaveChat = async (req, res) => {
     }
 };
 
-const fetchMembers = async(req, res) => {
+const fetchMembers = async (req, res) => {
     try {
         const chatId = req.params.chatId;
 
         const chat = await Chat.findById(chatId)
-                        .populate({
-                            path: 'members',
-                            populate: {
-                                path: 'profileImage'
-                            }
-                        })
-        
-        if(!chat){
+            .populate({
+                path: 'members',
+                populate: {
+                    path: 'profileImage'
+                }
+            })
+
+        if (!chat) {
             return res.status(404).json({
                 success: false,
                 message: 'Error finding members'
@@ -218,7 +222,7 @@ const fetchMembers = async(req, res) => {
             message: 'Something went wrong',
         });
     }
-} 
+}
 
 
 
