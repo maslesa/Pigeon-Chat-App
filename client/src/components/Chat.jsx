@@ -74,6 +74,23 @@ export default function Chat({ selectedChat }) {
         }
     }
 
+    const deleteChatImage = async () => {
+        try {
+            await axios.delete(`http://localhost:5000/image/delete/chatImage/${selectedChat._id}`, {
+                data: { imageId: selectedChat.backgroundImage._id },
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setAlert({ message: "Group image deleted successfully!", duration: 1000 });
+            setTimeout(() => {
+                setChatImageURL(null);
+                window.location.reload();
+            }, 1000);
+        } catch (error) {
+            console.log(error);
+            setAlert({ message: "Error deleting group image!", isError: true, duration: 2000 });
+        }
+    }
+
     const changeChatTitle = async () => {
         try {
             await axios.put(`http://localhost:5000/chat/change/title/${selectedChat._id}`, { newTitle: groupTitle }, axiosConfig);
@@ -210,7 +227,7 @@ export default function Chat({ selectedChat }) {
                                                     <button onClick={() => fileInputRef.current.click()} className="text-lg px-4 py-2 bg-white text-myback2 font-semibold rounded-lg shadow duration-200 ease-in-out hover:bg-myback hover:text-white cursor-pointer">
                                                         Change Image
                                                     </button>
-                                                    <div className='absolute p-3 bg-myback rounded-full top-5 right-5 cursor-pointer duration-200 ease-in-out hover:scale-105'>
+                                                    <div onClick={deleteChatImage} className='absolute p-3 bg-myback rounded-full top-5 right-5 cursor-pointer duration-200 ease-in-out hover:scale-105'>
                                                         <img className="w-5" src="/delete.png" alt="delete" />
                                                     </div>
                                                 </div>
