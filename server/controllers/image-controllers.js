@@ -5,10 +5,10 @@ const Chat = require('../models/Chat');
 const ChatImage = require('../models/ChatImage');
 const cloudinary = require('../config/cloudinary');
 
-const uploadProfileImage = async(req, res) => {
+const uploadProfileImage = async (req, res) => {
     try {
         //check if file is missing in req
-        if(!req.file){
+        if (!req.file) {
             return res.status(400).json({
                 success: false,
                 message: 'file is required, please upload an image'
@@ -16,7 +16,7 @@ const uploadProfileImage = async(req, res) => {
         }
 
         //upload to cloudinary
-        const {url, public_id} = await uploadToCloudinary(req.file.path);
+        const { url, public_id } = await uploadToCloudinary(req.file.path);
 
         const userId = req.userInfo.id;
         const user = await User.findById(userId);
@@ -48,9 +48,9 @@ const uploadProfileImage = async(req, res) => {
     }
 }
 
-const uploadChatImage = async(req, res) => {
+const uploadChatImage = async (req, res) => {
     try {
-        if(!req.file){
+        if (!req.file) {
             return res.status(400).json({
                 success: false,
                 message: 'file is missing'
@@ -58,12 +58,12 @@ const uploadChatImage = async(req, res) => {
         }
 
         //upload to cloudinary
-        const {url, public_id} = await uploadToCloudinary(req.file.path);
+        const { url, public_id } = await uploadToCloudinary(req.file.path);
 
         const chatId = req.params.chatId;
         const chat = await Chat.findById(chatId);
 
-        if(!chat){
+        if (!chat) {
             return res.status(404).json({
                 success: false,
                 message: 'chat with that id not found'
@@ -97,13 +97,13 @@ const uploadChatImage = async(req, res) => {
     }
 }
 
-const deleteProfileImage = async(req, res) => {
+const deleteProfileImage = async (req, res) => {
     try {
         const imageId = req.params.profileImageId;
         const userId = req.userInfo.id;
 
         const user = await User.findById(userId);
-        if(!user){
+        if (!user) {
             return res.status(404).json({
                 success: false,
                 message: 'user not found'
@@ -111,14 +111,14 @@ const deleteProfileImage = async(req, res) => {
         }
 
         const image = await ProfileImage.findById(imageId);
-        if(!image){
+        if (!image) {
             return res.status(404).json({
                 success: false,
                 message: 'image not found'
             })
         }
 
-        if(image.uploadedBy.toString() !== userId){
+        if (image.uploadedBy.toString() !== userId) {
             return res.status(403).json({
                 success: false,
                 message: 'you are not authorized to delete this image'
@@ -146,8 +146,52 @@ const deleteProfileImage = async(req, res) => {
     }
 }
 
+const deleteChatImage = async (req, res) => {
+    try {
+        const chatId = req.params.chatId;
+        const chat = await Chat.findById(chatId);
+
+        if (!chat) {
+            return res.status(404).json({
+                success: false,
+                message: 'chat not found'
+            })
+        }
+
+        const { imageId } = req.body;
+        const chatImage = await ChatImage.findById(imageId);
+
+        if(!chatImage){
+            return res.status(404).json({
+                success: false,
+                message: 'image not found'
+            })
+        }
+
+        await cloudinary.uploader.destroy(imageId);
+
+        await ChatImage.findByIdAndDelete(imageId);
+
+        chat.backgroundImage = null;
+        await chat.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'chat image deleted successfully'
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: 'smt went wrong'
+        })
+    }
+}
+
 module.exports = {
     uploadProfileImage,
     uploadChatImage,
     deleteProfileImage,
+    deleteChatImage,
 }

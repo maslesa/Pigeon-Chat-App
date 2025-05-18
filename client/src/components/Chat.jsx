@@ -74,9 +74,9 @@ export default function Chat({ selectedChat }) {
         }
     }
 
-    const changeChatTitle = async() => {
+    const changeChatTitle = async () => {
         try {
-            await axios.put(`http://localhost:5000/chat/change/title/${selectedChat._id}`, {newTitle: groupTitle}, axiosConfig);
+            await axios.put(`http://localhost:5000/chat/change/title/${selectedChat._id}`, { newTitle: groupTitle }, axiosConfig);
             setAlert({ message: "Group title updated!", duration: 1000 });
             setTimeout(() => {
                 window.location.reload();
@@ -210,6 +210,9 @@ export default function Chat({ selectedChat }) {
                                                     <button onClick={() => fileInputRef.current.click()} className="text-lg px-4 py-2 bg-white text-myback2 font-semibold rounded-lg shadow duration-200 ease-in-out hover:bg-myback hover:text-white cursor-pointer">
                                                         Change Image
                                                     </button>
+                                                    <div className='absolute p-3 bg-myback rounded-full top-5 right-5 cursor-pointer duration-200 ease-in-out hover:scale-105'>
+                                                        <img className="w-5" src="/delete.png" alt="delete" />
+                                                    </div>
                                                 </div>
                                             </div>
                                         ) : (
@@ -240,7 +243,7 @@ export default function Chat({ selectedChat }) {
                                                     <img onClick={() => setTitleChange(true)} className="w-5 cursor-pointer duration-200 ease-in-out hover:scale-110" src="/change.png" alt="change" />
                                                 ) : (
                                                     <div className="flex gap-2 items-center">
-                                                        <img onClick={() => { setTitleChange(false); setGroupTitle(selectedChat.title);}} className="w-8 cursor-pointer duration-200 ease-in-out hover:scale-110" src="/cancel.png" alt="cancel" />
+                                                        <img onClick={() => { setTitleChange(false); setGroupTitle(selectedChat.title); }} className="w-8 cursor-pointer duration-200 ease-in-out hover:scale-110" src="/cancel.png" alt="cancel" />
                                                         <img onClick={changeChatTitle} className="w-7 cursor-pointer duration-200 ease-in-out hover:scale-110" src="/copied.png" alt="change" />
                                                     </div>
                                                 )}
