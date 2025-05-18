@@ -109,12 +109,31 @@ export default function Chats({ selectedChat, setSelectedChat }) {
         try {
             const res = await axios.post(`http://localhost:5000/image/upload`, formData, axiosConfig);
             setAlert({ message: "Profile image updated!", duration: 1000 });
+            setProfileImageURL(res.data.image);
+            user.profileImage = res.data.image;
+            localStorage.setItem('user', JSON.stringify(user));
             setTimeout(() => {
                 window.location.reload();
             }, 1000);
         } catch (error) {
             console.log(error);
             setAlert({ message: "Error uploading profile image!", isError: true, duration: 2000 });
+        }
+    }
+
+    const deleteProfileImage = async () => {
+        try {
+            await axios.delete(`http://localhost:5000/image/delete/profileImage/${user.profileImage._id}`, axiosConfig);
+            setAlert({ message: "Profile image deleted successfully!", duration: 1000 });
+            setProfileImageURL(null);
+            user.profileImage = null;
+            localStorage.setItem('user', JSON.stringify(user));
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } catch (error) {
+            console.log(error);
+            setAlert({ message: "Error deleting profile image!", isError: true, duration: 2000 });
         }
     }
 
@@ -231,6 +250,9 @@ export default function Chats({ selectedChat, setSelectedChat }) {
                                     <button onClick={() => fileInputRef.current.click()} className="px-4 py-2 bg-white text-myback2 font-semibold rounded-lg shadow duration-200 ease-in-out hover:bg-myback hover:text-white cursor-pointer">
                                         Change Image
                                     </button>
+                                    <div onClick={deleteProfileImage} className='absolute p-3 bg-myback rounded-full top-5 right-5 cursor-pointer duration-200 ease-in-out hover:scale-105'>
+                                        <img className="w-5" src="/delete.png" alt="delete" />
+                                    </div>
                                 </div>
                             </div>
                         ) : (
