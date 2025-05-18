@@ -3,6 +3,7 @@ const ProfileImage = require('../models/ProfileImage');
 const User = require('../models/User');
 const Chat = require('../models/Chat');
 const ChatImage = require('../models/ChatImage');
+const cloudinary = require('../config/cloudinary');
 
 const uploadProfileImage = async(req, res) => {
     try {
@@ -96,7 +97,57 @@ const uploadChatImage = async(req, res) => {
     }
 }
 
+const deleteProfileImage = async(req, res) => {
+    try {
+        const imageId = req.params.profileImageId;
+        const userId = req.userInfo.id;
+
+        const user = await User.findById(userId);
+        if(!user){
+            return res.status(404).json({
+                success: false,
+                message: 'user not found'
+            })
+        }
+
+        const image = await ProfileImage.findById(imageId);
+        if(!image){
+            return res.status(404).json({
+                success: false,
+                message: 'image not found'
+            })
+        }
+
+        if(image.uploadedBy.toString() !== userId){
+            return res.status(403).json({
+                success: false,
+                message: 'you are not authorized to delete this image'
+            })
+        }
+
+        await cloudinary.uploader.destroy(imageId);
+
+        await ProfileImage.findByIdAndDelete(imageId);
+
+        user.profileImage = null;
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Image deleted successfully'
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: 'smt went wrong'
+        })
+    }
+}
+
 module.exports = {
     uploadProfileImage,
     uploadChatImage,
+    deleteProfileImage,
 }
