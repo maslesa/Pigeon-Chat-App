@@ -36,6 +36,8 @@ export default function Chat({ selectedChat }) {
     const [groupTitle, setGroupTitle] = useState(selectedChat?.title);
     const [titleChange, setTitleChange] = useState(false);
 
+    const [selectedProfile, setSelectedProfile] = useState(null);
+
     const handleLeaveSuccess = () => {
         if (typeof window.updateChatList === 'function') {
             window.updateChatList();
@@ -124,6 +126,7 @@ export default function Chat({ selectedChat }) {
         fetchChatMembers();
         setGroupTitle(selectedChat.title);
         setTitleChange(false);
+        setSelectedProfile(null);
 
         setMembers(selectedChat.members.length);
 
@@ -199,6 +202,29 @@ export default function Chat({ selectedChat }) {
                         {leaveGroup && selectedChat && (
                             <div onClick={() => setLeaveGroup(false)} className="flex justify-center items-center absolute top-1/2 left-1/2 w-full h-full transform -translate-x-1/2 -translate-y-1/2 bg-myback250 z-150">
                                 <YesNoDialog selectedChat={selectedChat} onLeaveSuccess={handleLeaveSuccess} onClose={() => setLeaveGroup(false)} />
+                            </div>
+                        )}
+                        {selectedChat && selectedProfile && (
+                            <div onClick={() => setSelectedProfile(null)} className='absolute flex w-full h-full bg-myback250 z-50 font-roboto text-white'>
+                                <div onClick={(e) => e.stopPropagation()} className='w-1/3 h-full bg-myback absolute right-0'>
+                                    <div className='pl-5 flex gap-5 justify-baseline items-center w-full h-1/12'>
+                                        <img onClick={() => setSelectedProfile(null)} className='w-5 cursor-pointer duration-200 ease-in-out hover:scale-105' src="/close.png" alt="close" />
+                                        <p className='font-semibold text-xl'>User info</p>
+                                    </div>
+                                    <div className='w-full h-1/2 bg-white flex justify-center items-center'>
+                                        {selectedProfile.profileImage ? (
+                                            <img className="w-full h-full object-cover" src={selectedProfile.profileImage.url} alt="userprofileimage" />
+                                        ) : (
+                                            <div className="relative w-full h-full flex items-center justify-center text-myback2 text-7xl font-semibold">
+                                                {selectedProfile.nameSurname.charAt(0).toUpperCase()}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className='w-full flex flex-col gap-3 p-7'>
+                                        <p className='text-2xl'>{selectedProfile.nameSurname}</p>
+                                        <p className='text-lg opacity-50'>{selectedProfile.username}</p>
+                                    </div>
+                                </div>
                             </div>
                         )}
                         {groupInfo && selectedChat && (
@@ -377,10 +403,10 @@ export default function Chat({ selectedChat }) {
                                                 <div key={msg._id} className={`flex mb-2 items-end ${isMe ? 'justify-end' : 'justify-start'}`}>
                                                     {!isMe && (
                                                         msg.sentBy.profileImage?.url ? (
-                                                            <img src={msg.sentBy.profileImage.url} alt="Profile" className="w-10 h-10 object-cover rounded-full mr-2" />
+                                                            <img onClick={() => setSelectedProfile(msg.sentBy)} src={msg.sentBy.profileImage.url} alt="Profile" className="w-10 h-10 object-cover rounded-full mr-2 cursor-pointer" />
                                                         ) : (
-                                                            <div className="w-10 h-10 bg-white rounded-full mr-2 flex justify-center items-center font-roboto font-bold text-lg">
-                                                                {msg.sentBy.username.charAt(0).toUpperCase()}
+                                                            <div onClick={() => setSelectedProfile(msg.sentBy)} className="w-10 h-10 bg-white rounded-full mr-2 flex justify-center items-center font-roboto font-bold text-lg cursor-pointer">
+                                                                {msg.sentBy.nameSurname.charAt(0).toUpperCase()}
                                                             </div>
                                                         )
                                                     )}
@@ -390,7 +416,7 @@ export default function Chat({ selectedChat }) {
                                                             : 'bg-gray-700 rounded-bl-none'
                                                             }`}
                                                     >
-                                                        <div className="font-medium">
+                                                        <div onClick={() => setSelectedProfile(msg.sentBy)} className="font-medium cursor-pointer">
                                                             {!isMe && <span>{msg.sentBy.username}</span>}
                                                         </div>
                                                         <div className={`${isMe ? 'mt-0' : 'mt-1'}`}>{msg.body}</div>
