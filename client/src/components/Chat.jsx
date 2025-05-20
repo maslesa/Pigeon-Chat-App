@@ -311,7 +311,7 @@ export default function Chat({ selectedChat }) {
                                         <div className='flex flex-col pl-6 pr-3 overflow-y-auto max-h-48 custom-scrollbar'>
                                             {chatMembers && chatMembers.map((member) => {
                                                 const isMe = member._id === user._id;
-                                                return <div key={member._id} className='p-3 flex gap-3 items-center justify-baseline cursor-pointer duration-200 ease-in-out hover:bg-myback2 rounded-xl'>
+                                                return <div onClick={() => {setGroupInfo(false); setSelectedProfile(member);}} key={member._id} className='p-3 flex gap-3 items-center justify-baseline cursor-pointer duration-200 ease-in-out hover:bg-myback2 rounded-xl'>
                                                     {member.profileImage ? (
                                                         <img src={member.profileImage.url} alt="Profile" className="w-10 h-10 object-cover rounded-full mr-2" />
                                                     ) : (
