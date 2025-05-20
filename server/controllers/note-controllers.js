@@ -46,7 +46,8 @@ const addNote = async(req, res) => {
 
         res.status(200).json({
             success: true,
-            message: 'note created successfully'
+            message: 'note created successfully',
+            note: newNote
         })
 
     } catch (error) {
@@ -60,6 +61,8 @@ const addNote = async(req, res) => {
 
 const deleteNote = async(req, res) => {
     try {
+
+        const userId = req.userInfo.id;
         const noteId = req.params.noteId;
         const note = await Note.findById(noteId);
 
@@ -67,6 +70,13 @@ const deleteNote = async(req, res) => {
             return res.status(404).json({
                 success: false,
                 message: 'note not found'
+            })
+        }
+
+        if(note.user.toString() !== userId){
+            return res.status(403).json({
+                success: false,
+                message: 'you are not authorized to delete this note'
             })
         }
 

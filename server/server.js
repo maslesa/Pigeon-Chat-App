@@ -10,6 +10,7 @@ const Chat = require('./models/Chat');
 const authRoutes = require('./routes/auth-routes');
 const chatRoutes = require('./routes/chat-routes');
 const imageRoutes = require('./routes/image-routes');
+const noteRoutes = require('./routes/note-routes');
 
 const PORT = process.env.PORT;
 const app = express();
@@ -23,6 +24,8 @@ app.use(express.json());
 app.use('/user', authRoutes);
 app.use('/chat', chatRoutes);
 app.use('/image', imageRoutes);
+app.use('/note', noteRoutes);
+
 
 io.on('connection', (socket) => {
 
