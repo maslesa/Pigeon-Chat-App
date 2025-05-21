@@ -6,7 +6,7 @@ import Alert from './Alert';
 
 const socket = io('http://localhost:5000');
 
-export default function Chat({ selectedChat }) {
+export default function Chat({ selectedChat, isNotesView }) {
     const token = localStorage.getItem('token');
     const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
 
@@ -186,6 +186,63 @@ export default function Chat({ selectedChat }) {
         return acc;
     }, {});
 
+    const [notes, setNotes] = useState([]);
+
+    useEffect(() => {
+        if (isNotesView) {
+            const fetchNotes = async () => {
+                try {
+                    const res = await axios.get(`http://localhost:5000/note/fetch`, axiosConfig);
+                    setNotes(res.data.notes);
+                } catch (err) {
+                    console.error("Failed to fetch notes:", err);
+                }
+            };
+            fetchNotes();
+        }
+    }, [isNotesView]);
+
+    if (isNotesView) {
+
+        return (
+            <div className="flex flex-col max-h-screen flex-1 bg-myback2 justify-baseline items-center relative bg-cover bg-center" style={{ backgroundImage: "url('/background.png')" }} >
+                <div className='w-full bg-myback flex justify-between pl-10 pr-10'>
+                    <div className="h-20 flex gap-3 items-center justify-baseline shadow-lg">
+                        <div className="w-12 h-12 bg-white flex justify-center items-center rounded-full">
+                            <img className='w-5' src="/notes.png" alt="" />
+                        </div>
+                        <div className="flex flex-col h-15 justify-center font-roboto font-normal pt-1 text-white text-xl">
+                            <p>
+                                My notes
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div className="w-full h-6/7 overflow-y-hidden flex justify-center items-center">
+
+                </div>
+                <div className="w-full h-1/7 flex gap-5 justify-center items-center">
+                    <input
+                        className="w-2/3 h-1/2 border-2 border-white rounded-xl outline-0 font-roboto pl-5 pr-5 items-center text-white bg-myback2 duration-200 ease-in-out focus:bg-myback"
+                        autoComplete="off"
+                        type="text"
+                        placeholder="Enter new note"
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                sendMessage();
+                            }
+                        }}
+                    />
+                    <div onClick={sendMessage} className="cursor-pointer duration-200 ease-in-out hover:scale-110 bg-myback2 p-3 rounded-full hover:bg-myback">
+                        <img className="w-5" src="/send.png" alt="" />
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
     return (
         <>
             {alert && (
@@ -311,7 +368,7 @@ export default function Chat({ selectedChat }) {
                                         <div className='flex flex-col pl-6 pr-3 overflow-y-auto max-h-48 custom-scrollbar'>
                                             {chatMembers && chatMembers.map((member) => {
                                                 const isMe = member._id === user._id;
-                                                return <div onClick={() => {setGroupInfo(false); setSelectedProfile(member);}} key={member._id} className='p-3 flex gap-3 items-center justify-baseline cursor-pointer duration-200 ease-in-out hover:bg-myback2 rounded-xl'>
+                                                return <div onClick={() => { setGroupInfo(false); setSelectedProfile(member); }} key={member._id} className='p-3 flex gap-3 items-center justify-baseline cursor-pointer duration-200 ease-in-out hover:bg-myback2 rounded-xl'>
                                                     {member.profileImage ? (
                                                         <img src={member.profileImage.url} alt="Profile" className="w-10 h-10 object-cover rounded-full mr-2" />
                                                     ) : (
