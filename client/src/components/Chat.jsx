@@ -187,17 +187,23 @@ export default function Chat({ selectedChat, isNotesView }) {
     }, {});
 
     const [notes, setNotes] = useState([]);
+    const [newNote, setNewNote] = useState('');
+    const [loadingNotes, setLoadingNotes] = useState(false);
+
+    const fetchNotes = async () => {
+        try {
+            setLoadingNotes(true);
+            const res = await axios.get(`http://localhost:5000/note/fetch`, axiosConfig);
+            setNotes(res.data.notes);
+        } catch (err) {
+            console.error("Failed to fetch notes:", err);
+        } finally {
+            setLoadingNotes(false);
+        }
+    };
 
     useEffect(() => {
         if (isNotesView) {
-            const fetchNotes = async () => {
-                try {
-                    const res = await axios.get(`http://localhost:5000/note/fetch`, axiosConfig);
-                    setNotes(res.data.notes);
-                } catch (err) {
-                    console.error("Failed to fetch notes:", err);
-                }
-            };
             fetchNotes();
         }
     }, [isNotesView]);
@@ -218,8 +224,20 @@ export default function Chat({ selectedChat, isNotesView }) {
                         </div>
                     </div>
                 </div>
-                <div className="w-full h-6/7 overflow-y-hidden flex justify-center items-center">
-
+                <div className="w-full h-6/7 overflow-y-hidden">
+                    <div className="p-4 flex flex-col items-end gap-2 overflow-y-auto h-full custom-scrollbar">
+                        {notes.map((note) => (
+                            <div key={note._id} className='relative min-w-[150px] max-w-xs px-4 py-2 pr-20 rounded-2xl text-white text-sm shadow bg-blue-600 rounded-br-none'>
+                                <p>{note.body}</p>
+                                <div className="absolute bottom-1 right-3 text-white font-roboto text-[10px] opacity-80">
+                                    {new Date(note.createdAt).toLocaleTimeString([], {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                    })}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
                 <div className="w-full h-1/7 flex gap-5 justify-center items-center">
                     <input
@@ -227,11 +245,11 @@ export default function Chat({ selectedChat, isNotesView }) {
                         autoComplete="off"
                         type="text"
                         placeholder="Enter new note"
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
+                        value={newNote}
+                        onChange={(e) => setNewNote(e.target.value)}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
-                                sendMessage();
+                                //sendMessage();
                             }
                         }}
                     />
