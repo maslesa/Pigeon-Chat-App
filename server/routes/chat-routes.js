@@ -14,7 +14,7 @@ router.get('/fetch-all', isLoggedIn, chatFetchAll);
 router.get('/fetch-members/:chatId', isLoggedIn, fetchMembers);
 router.get('/get-messages/:chatId', isLoggedIn, isChatMember, fetchAllMessages);
 router.put('/join/:chatId', isLoggedIn, chatJoin);
-router.put('/send-message/:chatId', isLoggedIn, isChatMember, uploadImageMiddleware.single('imagefile'), sendMessage);
+router.put('/send-message/:chatId', isLoggedIn, isChatMember, uploadImageMiddleware.single('file'), sendMessage);
 router.put('/leave/:chatId', isLoggedIn, isChatMember, leaveChat);
 router.put('/change/title/:chatId', isLoggedIn, isChatMember, changeTitle);
 

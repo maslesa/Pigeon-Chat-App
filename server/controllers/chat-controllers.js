@@ -129,12 +129,9 @@ const chatJoin = async (req, res) => {
 const sendMessage = async (req, res) => {
     try {
         const userId = req.userInfo.id;
-        const { message } = req.body;
         const chatId = req.params.chatId;
-        let file = null;
-        if(req.file){
-            file = req.file;
-        }
+        const message = req.body.message;
+        let file = req.file || null;
 
         const newMessage = await createMessage({ chatId, userId, message, file });
 
