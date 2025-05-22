@@ -190,6 +190,13 @@ export default function Chat({ selectedChat, isNotesView }) {
     const [newNote, setNewNote] = useState('');
     const [loadingNotes, setLoadingNotes] = useState(false);
 
+    const groupedNotes = notes.reduce((acc, note) => {
+        const dateKey = formatDateHeader(note.createdAt);
+        if (!acc[dateKey]) acc[dateKey] = [];
+        acc[dateKey].push(note);
+        return acc;
+    }, {});
+
     const fetchNotes = async () => {
         try {
             setLoadingNotes(true);
@@ -225,16 +232,27 @@ export default function Chat({ selectedChat, isNotesView }) {
                     </div>
                 </div>
                 <div className="w-full h-6/7 overflow-y-hidden">
-                    <div className="p-4 flex flex-col items-end gap-2 overflow-y-auto h-full custom-scrollbar">
-                        {notes.map((note) => (
-                            <div key={note._id} className='relative min-w-[150px] max-w-xs px-4 py-2 pr-20 rounded-2xl text-white text-sm shadow bg-blue-600 rounded-br-none'>
-                                <p>{note.body}</p>
-                                <div className="absolute bottom-1 right-3 text-white font-roboto text-[10px] opacity-80">
-                                    {new Date(note.createdAt).toLocaleTimeString([], {
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                    })}
+                    <div className="p-4 flex flex-col gap-2 overflow-y-auto h-full custom-scrollbar">
+                        {Object.keys(groupedNotes).map((dateKey) => (
+                            <div key={dateKey} className="w-full">
+                                <div className="flex justify-center items-center my-4">
+                                    <span className="bg-gray-600 text-white text-xs px-5 py-1 rounded-full font-roboto">
+                                        {dateKey}
+                                    </span>
                                 </div>
+                                {groupedNotes[dateKey].map((note) => (
+                                    <div key={note._id} className="flex justify-end mb-2">
+                                        <div className="relative min-w-[150px] max-w-xs px-4 py-2 pr-20 rounded-2xl text-white text-sm shadow bg-blue-600 rounded-br-none">
+                                            <p>{note.body}</p>
+                                            <div className="absolute bottom-1 right-3 text-white font-roboto text-[10px] opacity-80">
+                                                {new Date(note.createdAt).toLocaleTimeString([], {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                })}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         ))}
                     </div>
