@@ -131,8 +131,12 @@ const sendMessage = async (req, res) => {
         const userId = req.userInfo.id;
         const { message } = req.body;
         const chatId = req.params.chatId;
+        let file = null;
+        if(req.file){
+            file = req.file;
+        }
 
-        const newMessage = await createMessage({ chatId, userId, message });
+        const newMessage = await createMessage({ chatId, userId, message, file });
 
         res.status(200).json({
             success: true,

@@ -23,10 +23,14 @@ const ChatSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Message',
     }],
+    images: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Image',
+    }],
     backgroundImage: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'ChatImage',
     }
-}, {timestamps: true});
+}, { timestamps: true });
 
 module.exports = mongoose.model('Chat', ChatSchema);

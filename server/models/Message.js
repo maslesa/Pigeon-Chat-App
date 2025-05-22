@@ -5,6 +5,11 @@ const MessageSchema = new mongoose.Schema({
         type: String,
         default: '',
     },
+    image: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Image',
+        default: null,
+    },
     sentBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
