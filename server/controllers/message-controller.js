@@ -69,6 +69,7 @@ const fetchAllMessages = async (req, res) => {
                     model: 'ProfileImage'
                 }
             })
+            .populate('image')
             .sort({ createdAt: 1 });
 
         res.status(200).json({
