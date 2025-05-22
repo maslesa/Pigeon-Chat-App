@@ -290,7 +290,7 @@ export default function Chat({ selectedChat, isNotesView }) {
                             }
                         }}
                     />
-                    <div onClick={sendMessage} className="cursor-pointer duration-200 ease-in-out hover:scale-110 bg-myback2 p-3 rounded-full hover:bg-myback">
+                    <div onClick={createNote} className="cursor-pointer duration-200 ease-in-out hover:scale-110 bg-myback2 p-3 rounded-full hover:bg-myback">
                         <img className="w-5" src="/send.png" alt="" />
                     </div>
                 </div>
