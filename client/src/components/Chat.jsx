@@ -209,15 +209,23 @@ export default function Chat({ selectedChat, isNotesView }) {
         }
     };
 
-    const createNote = async() => {
+    const createNote = async () => {
         try {
-            const res = await axios.post(`http://localhost:5000/note/post`, {body: newNote}, axiosConfig);
+            const res = await axios.post(`http://localhost:5000/note/post`, { body: newNote }, axiosConfig);
             setNotes([...notes, res.data.note]);
             setNewNote('');
         } catch (error) {
             console.log('error', error);
         }
     }
+
+    const noteEndRef = useRef(null);
+
+    useEffect(() => {
+        if (noteEndRef.current) {
+            noteEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [notes]);
 
     useEffect(() => {
         if (isNotesView) {
@@ -265,6 +273,7 @@ export default function Chat({ selectedChat, isNotesView }) {
                                 ))}
                             </div>
                         ))}
+                        <div ref={noteEndRef} />
                     </div>
                 </div>
                 <div className="w-full h-1/7 flex gap-5 justify-center items-center">
