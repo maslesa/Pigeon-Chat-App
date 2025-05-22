@@ -209,6 +209,16 @@ export default function Chat({ selectedChat, isNotesView }) {
         }
     };
 
+    const createNote = async() => {
+        try {
+            const res = await axios.post(`http://localhost:5000/note/post`, {body: newNote}, axiosConfig);
+            setNotes([...notes, res.data.note]);
+            setNewNote('');
+        } catch (error) {
+            console.log('error', error);
+        }
+    }
+
     useEffect(() => {
         if (isNotesView) {
             fetchNotes();
@@ -267,7 +277,7 @@ export default function Chat({ selectedChat, isNotesView }) {
                         onChange={(e) => setNewNote(e.target.value)}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
-                                //sendMessage();
+                                createNote();
                             }
                         }}
                     />
