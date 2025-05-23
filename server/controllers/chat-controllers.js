@@ -48,11 +48,15 @@ const chatFetchAll = async (req, res) => {
         const chats = await Chat.find({ members: userId })
             .populate({
                 path: 'messages',
-                select: 'body createdAt sentBy',
-                populate: {
+                select: 'body createdAt sentBy image',
+                populate: [{
                     path: 'sentBy',
                     select: 'username _id'
-                }
+                },
+                {
+                    path: 'image',
+                    select: 'url'
+                }]
             })
             .populate({
                 path: 'backgroundImage',
@@ -225,21 +229,21 @@ const fetchMembers = async (req, res) => {
     }
 }
 
-const changeTitle = async(req, res) => {
+const changeTitle = async (req, res) => {
     try {
         const chatId = req.params.chatId;
         const chat = await Chat.findById(chatId);
 
-        if(!chat){
+        if (!chat) {
             return res.status(404).json({
                 success: false,
                 message: 'chat with that Id not found'
             })
         }
 
-        const {newTitle} = req.body;
+        const { newTitle } = req.body;
 
-        if(newTitle.length < 3){
+        if (newTitle.length < 3) {
             return res.status(400).json({
                 success: false,
                 message: 'title has to be min 3 chars long'

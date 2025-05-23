@@ -5,7 +5,7 @@ import JoinChat from "./JoinChat";
 import Alert from "./Alert";
 import { useNavigate } from 'react-router-dom'
 
-export default function Chats({ selectedChat, setSelectedChat, setIsNotesView  }) {
+export default function Chats({ selectedChat, setSelectedChat, setIsNotesView }) {
 
     const navigate = useNavigate();
 
@@ -200,7 +200,7 @@ export default function Chats({ selectedChat, setSelectedChat, setIsNotesView  }
                             <img className='w-5' src="/moon.png" alt="nightmode" />
                             <p>Night mode</p>
                         </div>
-                        <div onClick={() => {setUserMenu(false); setIsNotesView(true); setSelectedChat(null);}} className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
+                        <div onClick={() => { setUserMenu(false); setIsNotesView(true); setSelectedChat(null); }} className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
                             <img className='w-5' src="/thinking.png" alt="thinking" />
                             <p>My notes</p>
                         </div>
@@ -377,7 +377,7 @@ export default function Chats({ selectedChat, setSelectedChat, setIsNotesView  }
                 {chats && chats.length > 0 ? (
                     chats.map((chat) => {
                         return (
-                            <div onClick={() => {setSelectedChat(chat); setIsNotesView(false)}} key={chat._id} className={`w-full min-h-21 flex items-center pl-3 gap-3 duration-200 ease-in-out cursor-pointer
+                            <div onClick={() => { setSelectedChat(chat); setIsNotesView(false) }} key={chat._id} className={`w-full min-h-21 flex items-center pl-3 gap-3 duration-200 ease-in-out cursor-pointer
                                                          rounded-2xl  ${selectedChat && selectedChat._id === chat._id ? 'bg-myback2' : 'hover:bg-black50'}`}>
                                 <div className="min-w-13 h-13 bg-white flex justify-center items-center rounded-full">
                                     {chat.backgroundImage ? (
@@ -393,11 +393,22 @@ export default function Chats({ selectedChat, setSelectedChat, setIsNotesView  }
                                         <p>{chat.title}</p>
                                         <p className="text-xs ">{chat.messages.length > 0 && formatMessageDate(chat.messages[chat.messages.length - 1].createdAt)}</p>
                                     </div>
-                                    <p className="text-sm opacity-80 truncate max-w-[12rem]">
-                                        {chat.messages && chat.messages.length > 0
-                                            ? `${chat.messages[chat.messages.length - 1].sentBy.username}: ${chat.messages[chat.messages.length - 1].body}`
-                                            : 'No messages yet'}
-                                    </p>
+                                    <div className="flex gap-1 items-center">
+                                        <p className="text-sm opacity-80 max-w-[12rem]">
+                                            {chat.messages && chat.messages.length > 0
+                                                ? `${chat.messages[chat.messages.length - 1].sentBy.username}: `
+                                                : 'No messages yet'}
+                                        </p>
+                                        {chat.messages && chat.messages.length > 0 && chat.messages[chat.messages.length - 1].image && (
+                                            <div className="flex items-center justify-center mr-1">
+                                                <img className="w-4 opacity-80" src="/camera.png" alt="camera" />
+                                                <p className="text-sm opacity-80">Photo</p>
+                                            </div>
+                                        )}
+                                        <p className={`text-sm opacity-80 truncate ${chat.messages[chat.messages.length - 1].image ? 'max-w-[7rem]' : 'max-w-[12rem]'}`}>
+                                            {chat.messages[chat.messages.length - 1].body}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         )
