@@ -41,6 +41,8 @@ export default function Chat({ selectedChat, isNotesView }) {
 
     const [selectedProfile, setSelectedProfile] = useState(null);
 
+    const [imagePreview, setImagePreview] = useState(null);
+
     const handleLeaveSuccess = () => {
         if (typeof window.updateChatList === 'function') {
             window.updateChatList();
@@ -130,6 +132,7 @@ export default function Chat({ selectedChat, isNotesView }) {
         setGroupTitle(selectedChat.title);
         setTitleChange(false);
         setSelectedProfile(null);
+        setImagePreview(null);
 
         setMembers(selectedChat.members.length);
 
@@ -326,6 +329,16 @@ export default function Chat({ selectedChat, isNotesView }) {
             <div className="flex flex-col max-h-screen flex-1 bg-myback2 justify-baseline items-center relative bg-cover bg-center" style={{ backgroundImage: "url('/background.png')" }} >
                 {selectedChat && (
                     <>
+                        {imagePreview && (
+                            <div onClick={() => setImagePreview(null)} className="absolute w-full h-full flex justify-center items-center z-20">
+                                <div className="absolute inset-0 bg-myback2 opacity-80"></div>
+                                <img
+                                    className="w-80 z-30 opacity-100"
+                                    src={imagePreview.url}
+                                    alt="image"
+                                />
+                            </div>
+                        )}
                         {leaveGroup && selectedChat && (
                             <div onClick={() => setLeaveGroup(false)} className="flex justify-center items-center absolute top-1/2 left-1/2 w-full h-full transform -translate-x-1/2 -translate-y-1/2 bg-myback250 z-150">
                                 <YesNoDialog selectedChat={selectedChat} onLeaveSuccess={handleLeaveSuccess} onClose={() => setLeaveGroup(false)} />
@@ -548,7 +561,10 @@ export default function Chat({ selectedChat, isNotesView }) {
                                                         </div>
                                                         <div className={`${isMe ? 'mt-0' : 'mt-1'}`}>
                                                             {msg.image && (
-                                                                <div className='p-2 w-full'>
+                                                                <div onClick={() => setImagePreview(msg.image)} className='w-full cursor-pointer relative group m-2'>
+                                                                    <div className='absolute inset-0 bg-myback2 bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-50 transition-opacity duration-300 rounded-xl'>
+                                                                        <img className='w-10' src="/camera.png" alt="camera" />
+                                                                    </div>
                                                                     <img
                                                                         src={msg.image.url}
                                                                         alt="messageimg"
