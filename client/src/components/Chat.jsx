@@ -36,6 +36,9 @@ export default function Chat({ selectedChat, isNotesView }) {
     const [groupTitle, setGroupTitle] = useState(selectedChat?.title);
     const [titleChange, setTitleChange] = useState(false);
 
+    const imageRef = useRef(null);
+    const [image, setImage] = useState(null);
+
     const [selectedProfile, setSelectedProfile] = useState(null);
 
     const handleLeaveSuccess = () => {
@@ -188,7 +191,6 @@ export default function Chat({ selectedChat, isNotesView }) {
 
     const [notes, setNotes] = useState([]);
     const [newNote, setNewNote] = useState('');
-    const [loadingNotes, setLoadingNotes] = useState(false);
 
     const groupedNotes = notes.reduce((acc, note) => {
         const dateKey = formatDateHeader(note.createdAt);
@@ -199,13 +201,10 @@ export default function Chat({ selectedChat, isNotesView }) {
 
     const fetchNotes = async () => {
         try {
-            setLoadingNotes(true);
             const res = await axios.get(`http://localhost:5000/note/fetch`, axiosConfig);
             setNotes(res.data.notes);
         } catch (err) {
             console.error("Failed to fetch notes:", err);
-        } finally {
-            setLoadingNotes(false);
         }
     };
 
@@ -546,10 +545,35 @@ export default function Chat({ selectedChat, isNotesView }) {
                                 ))}
                             </div>
                         </div>
-                        <div className="w-full h-1/7 flex gap-5 justify-center items-center">
-                            <div className="cursor-pointer duration-200 ease-in-out hover:scale-110 bg-myback2 p-3 rounded-2xl hover:bg-myback">
+                        <div className="w-full h-1/7 flex gap-5 justify-center items-center relative">
+                            <input
+                                type="file"
+                                accept="image/*"
+                                ref={imageRef}
+                                className="hidden"
+                                onChange={(e) => {
+                                    if (e.target.files.length > 0) {
+                                        setImage(e.target.files[0]);
+                                        console.log(image);
+
+                                    }
+                                }}
+                            />
+                            <div onClick={() => imageRef.current.click()} className="cursor-pointer duration-200 ease-in-out hover:scale-110 bg-myback2 p-3 rounded-2xl hover:bg-myback">
                                 <img className="w-5" src="/link.png" alt="" />
                             </div>
+                            {image && (
+                                <div className="w-2/3 flex justify-baseline items-baseline mb-2 absolute bottom-20">
+                                    <img
+                                        src={URL.createObjectURL(image)}
+                                        alt="preview"
+                                        className="max-h-18 rounded-lg object-contain"
+                                    />
+                                    <div onClick={() => setImage(null)} className='bg-myback p-2 absolute top-1 left-19 cursor-pointer rounded-full'>
+                                        <img className='w-3' src="/closeimg.png" alt="closeimage" />
+                                    </div>
+                                </div>
+                            )}
                             <input
                                 className="w-2/3 h-1/2 border-2 border-white rounded-xl outline-0 font-roboto pl-5 pr-5 items-center text-white bg-myback2 duration-200 ease-in-out focus:bg-myback"
                                 autoComplete="off"
