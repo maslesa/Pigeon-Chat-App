@@ -153,14 +153,30 @@ export default function Chat({ selectedChat, isNotesView }) {
         };
     }, [selectedChat]);
 
-    const sendMessage = () => {
-        if (!message.trim()) return;
+    const toBase64 = file => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+    });
+
+    const sendMessage = async () => {
+        if (!message.trim() && !image) return;
+
+        let base64 = null;
+        if (image) {
+            base64 = await toBase64(image);
+        }
+
         socket.emit('chatMessage', {
             chatId: selectedChat._id,
             userId: user._id,
-            message: message,
+            message,
+            base64Image: base64,
         });
+
         setMessage('');
+        setImage(null);
     };
 
     function formatDateHeader(dateStr) {
@@ -530,7 +546,18 @@ export default function Chat({ selectedChat, isNotesView }) {
                                                         <div onClick={() => setSelectedProfile(msg.sentBy)} className="font-medium cursor-pointer">
                                                             {!isMe && <span>{msg.sentBy.username}</span>}
                                                         </div>
-                                                        <div className={`${isMe ? 'mt-0' : 'mt-1'}`}>{msg.body}</div>
+                                                        <div className={`${isMe ? 'mt-0' : 'mt-1'}`}>
+                                                            {msg.image && (
+                                                                <div className='p-2 w-full'>
+                                                                    <img
+                                                                        src={msg.image.url}
+                                                                        alt="messageimg"
+                                                                        className="w-max rounded-xl mb-1 "
+                                                                    />
+                                                                </div>
+                                                            )}
+                                                            {msg.body}
+                                                        </div>
                                                         <div className="absolute bottom-1 right-3 text-white font-roboto text-[10px] opacity-80">
                                                             {new Date(msg.createdAt).toLocaleTimeString([], {
                                                                 hour: '2-digit',
@@ -554,8 +581,6 @@ export default function Chat({ selectedChat, isNotesView }) {
                                 onChange={(e) => {
                                     if (e.target.files.length > 0) {
                                         setImage(e.target.files[0]);
-                                        console.log(image);
-
                                     }
                                 }}
                             />

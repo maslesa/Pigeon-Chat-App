@@ -1,17 +1,17 @@
-const { uploadToCloudinary } = require('../helpers/cloudinary-helper');
+const { uploadToCloudinary, uploadBase64ToCloudinary } = require('../helpers/cloudinary-helper');
 const Chat = require('../models/Chat');
 const Image = require('../models/Image');
 const Message = require('../models/Message');
 
-const createMessage = async ({ chatId, userId, message, file }) => {
+const createMessage = async ({ chatId, userId, message, base64Image }) => {
     try {
-
         let file_id = null;
 
-        //if file exists in request, upload this to cloudinary
-        if (file) {
-            // upload to cloudinary
-            const { url, public_id } = await uploadToCloudinary(file.path);
+        if (base64Image) {
+            const uploaded = await uploadBase64ToCloudinary(base64Image);
+            if (!uploaded) throw new Error('Cloudinary upload failed');
+
+            const { url, public_id } = uploaded;
 
             const image = await Image.create({
                 url,
@@ -39,23 +39,17 @@ const createMessage = async ({ chatId, userId, message, file }) => {
         const populatedMessage = await Message.findById(newMessage._id)
             .populate({
                 path: 'sentBy',
-                populate: {
-                    path: 'profileImage',
-                    model: 'ProfileImage'
-                }
+                populate: { path: 'profileImage', model: 'ProfileImage' }
             })
             .populate('image');
 
         return populatedMessage;
 
     } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            success: false,
-            message: 'smt went wrong'
-        })
+        console.error('Error creating message:', error.message);
+        throw error;
     }
-}
+};
 
 const fetchAllMessages = async (req, res) => {
     try {

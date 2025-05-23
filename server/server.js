@@ -37,9 +37,9 @@ io.on('connection', (socket) => {
         io.to(chatId).emit('updateMembers', membersCount);
     });
 
-    socket.on('chatMessage', async ({ chatId, userId, message }) => {
+    socket.on('chatMessage', async ({ chatId, userId, message, base64Image }) => {
         try {
-            const newMessage = await createMessage({ chatId, userId, message });
+            const newMessage = await createMessage({ chatId, userId, message, base64Image });
             io.to(chatId).emit('receiveMessage', newMessage);
         } catch (error) {
             console.error('Socket sendMessage error:', error);
