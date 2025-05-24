@@ -43,6 +43,9 @@ export default function Chat({ selectedChat, isNotesView }) {
 
     const [imagePreview, setImagePreview] = useState(null);
 
+    const [chatMedia, setChatMedia] = useState([]);
+    const [chatMediaView, setChatMediaView] = useState(false);
+
     const handleLeaveSuccess = () => {
         if (typeof window.updateChatList === 'function') {
             window.updateChatList();
@@ -111,6 +114,15 @@ export default function Chat({ selectedChat, isNotesView }) {
         }
     }
 
+    const fetchChatMedia = async () => {
+        try {
+            const res = await axios.get(`http://localhost:5000/chat/fetch-media/${selectedChat._id}`, axiosConfig);
+            setChatMedia(res.data.media);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     const invitationCredentials = selectedChat && `chat_id: ${selectedChat._id} | passcode: ${selectedChat.passcode}`;
 
     useEffect(() => {
@@ -133,6 +145,7 @@ export default function Chat({ selectedChat, isNotesView }) {
         setTitleChange(false);
         setSelectedProfile(null);
         setImagePreview(null);
+        fetchChatMedia();
 
         setMembers(selectedChat.members.length);
 
@@ -180,6 +193,15 @@ export default function Chat({ selectedChat, isNotesView }) {
 
         setMessage('');
         setImage(null);
+
+        if (base64) {
+            const newImage = {
+                _id: Date.now().toString(),
+                url: base64,
+                sentBy: user._id,
+            };
+            setChatMedia((prev) => [...prev, newImage]);
+        }
     };
 
     function formatDateHeader(dateStr) {
@@ -330,7 +352,7 @@ export default function Chat({ selectedChat, isNotesView }) {
                 {selectedChat && (
                     <>
                         {imagePreview && (
-                            <div onClick={() => setImagePreview(null)} className="absolute w-full h-full flex justify-center items-center z-20">
+                            <div onClick={() => setImagePreview(null)} className="absolute w-full h-full flex justify-center items-center z-200">
                                 <div className="absolute inset-0 bg-myback2 opacity-80"></div>
                                 <img
                                     className="w-80 z-30 opacity-100"
@@ -367,6 +389,41 @@ export default function Chat({ selectedChat, isNotesView }) {
                                 </div>
                             </div>
                         )}
+                        {chatMediaView && selectedChat && (
+                            <div onClick={() => setChatMediaView(false)} className="flex justify-center items-center absolute top-1/2 left-1/2 w-full h-full transform -translate-x-1/2 -translate-y-1/2 bg-myback250 z-150">
+                                <div onClick={(e) => e.stopPropagation()} className="w-1/3 h-full absolute right-0 bg-myback flex flex-col font-roboto text-white">
+                                    <div className="pl-5 flex gap-5 items-center w-full h-1/12">
+                                        <img
+                                            onClick={() => setChatMediaView(false)}
+                                            className="w-5 cursor-pointer duration-200 ease-in-out hover:scale-105"
+                                            src="/close.png"
+                                            alt="close"
+                                        />
+                                        <p className="font-semibold text-xl">Media</p>
+                                    </div>
+                                    <div className="w-full h-full overflow-y-auto p-4 custom-scrollbar">
+                                        {chatMedia.length > 0 ? (
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {chatMedia.map((image) => (
+                                                    <div onClick={() => {setImagePreview(image)}} key={image._id} className="w-full aspect-[1/1] overflow-hidden rounded-lg">
+                                                        <img
+                                                            src={image.url}
+                                                            alt="chat media"
+                                                            className="w-full h-full object-cover cursor-pointer hover:scale-105 duration-200"
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-lg text-gray-400">
+                                                No media in this chat.
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {groupInfo && selectedChat && (
                             <div onClick={() => setGroupInfo(false)} className='flex justify-center items-center absolute top-1/2 left-1/2 w-full h-full transform -translate-x-1/2 -translate-y-1/2 bg-myback250 z-150'>
                                 <div onClick={(e) => e.stopPropagation()} className='w-1/3 h-full absolute right-0 bg-myback flex flex-col items-baseline font-roboto text-white'>
@@ -435,12 +492,12 @@ export default function Chat({ selectedChat, isNotesView }) {
                                         </div>
                                     </div>
                                     <div className='w-full p-3 pl-5 pr-5 flex items-center justify-between'>
-                                        <div className='flex gap-1 items-center justify-center'>
+                                        <div onClick={() => { setChatMediaView(true); setGroupInfo(false); }} className='flex gap-1 items-center justify-center'>
                                             <img className='w-5 cursor-pointer' src="/media.png" alt="media" />
                                             <p className='text-lg font-medium cursor-pointer'>Media</p>
                                         </div>
-                                        <div className='flex items-center justify-center'>
-                                            <img className='w-6 cursor-pointer duration-200 ease-in-out hover:scale-105' src="open.png" alt="open" />
+                                        <div onClick={() => { setChatMediaView(true); setGroupInfo(false); }} className='flex items-center justify-center'>
+                                            <img className='w-6 cursor-pointer duration-200 ease-in-out hover:scale-105' src="/open.png" alt="open" />
                                         </div>
                                     </div>
                                     <div className='w-full bg-myback p-3 pl-5 pr-5'>
@@ -515,7 +572,7 @@ export default function Chat({ selectedChat, isNotesView }) {
                                             <img className='w-5' src="/info.png" alt="info" />
                                             <p>Group info</p>
                                         </div>
-                                        <div className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
+                                        <div onClick={() => setChatMediaView(true)} className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
                                             <img className='w-5' src="/media.png" alt="bin" />
                                             <p>Media</p>
                                         </div>
