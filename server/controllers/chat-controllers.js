@@ -267,6 +267,33 @@ const changeTitle = async (req, res) => {
     }
 }
 
+const fetchAllChatMedia = async(req, res) => {
+    try {
+        const chatId = req.params.chatId;
+        const chat = await Chat.findById(chatId).populate('images');
+
+        if(!chat){
+            return res.status(404).json({
+                success: false,
+                message: 'chat with that id not found'
+            })
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'chat media fetched successfully',
+            media: chat.images
+        })
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: 'Something went wrong',
+        });
+    }
+}
+
 
 
 module.exports = {
@@ -277,4 +304,5 @@ module.exports = {
     leaveChat,
     fetchMembers,
     changeTitle,
+    fetchAllChatMedia,
 }
