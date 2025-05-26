@@ -4,6 +4,7 @@ const User = require('../models/User');
 const Chat = require('../models/Chat');
 const ChatImage = require('../models/ChatImage');
 const cloudinary = require('../config/cloudinary');
+const fs = require('fs');
 
 const uploadProfileImage = async (req, res) => {
     try {
@@ -32,6 +33,9 @@ const uploadProfileImage = async (req, res) => {
 
         user.profileImage = newProfileImage._id;
         await user.save();
+
+        //delete image from local storage
+        fs.unlinkSync(req.file.path);
 
         res.status(200).json({
             success: true,
@@ -80,6 +84,9 @@ const uploadChatImage = async (req, res) => {
 
         chat.backgroundImage = newChatImage._id;
         await chat.save();
+
+        //delete image from local storage
+        fs.unlinkSync(req.file.path);
 
         res.status(200).json({
             success: true,
