@@ -4,8 +4,8 @@ const router = express.Router();
 const isLoggedIn = require('../middlewares/isLoggedInMiddleware');
 const { isChatMember } = require('../middlewares/chatMiddleware');
 
-const {chatCreate, chatFetchAll, chatJoin, sendMessage, leaveChat, fetchMembers, changeTitle, fetchAllChatMedia} = require('../controllers/chat-controllers');
-const {fetchAllMessages} = require('../controllers/message-controller');
+const { chatCreate, chatFetchAll, chatJoin, sendMessage, leaveChat, fetchMembers, changeTitle, fetchAllChatMedia, fetchChatAdmins } = require('../controllers/chat-controllers');
+const { fetchAllMessages } = require('../controllers/message-controller');
 
 const uploadImageMiddleware = require('../middlewares/profileImageUploadMiddleware');
 
@@ -18,5 +18,6 @@ router.put('/send-message/:chatId', isLoggedIn, isChatMember, uploadImageMiddlew
 router.put('/leave/:chatId', isLoggedIn, isChatMember, leaveChat);
 router.put('/change/title/:chatId', isLoggedIn, isChatMember, changeTitle);
 router.get('/fetch-media/:chatId', isLoggedIn, isChatMember, fetchAllChatMedia);
+router.get('/fetch-admins/:chatId', isLoggedIn, isChatMember, fetchChatAdmins);
 
 module.exports = router;

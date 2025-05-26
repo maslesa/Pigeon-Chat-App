@@ -46,6 +46,8 @@ export default function Chat({ selectedChat, isNotesView }) {
     const [chatMedia, setChatMedia] = useState([]);
     const [chatMediaView, setChatMediaView] = useState(false);
 
+    const [admins, setAdmins] = useState([]);
+
     const handleLeaveSuccess = () => {
         if (typeof window.updateChatList === 'function') {
             window.updateChatList();
@@ -123,6 +125,15 @@ export default function Chat({ selectedChat, isNotesView }) {
         }
     }
 
+    const fetchChatAdmins = async () => {
+        try {
+            const res = await axios.get(`http://localhost:5000/chat/fetch-admins/${selectedChat._id}`, axiosConfig);
+            setAdmins(res.data.admins);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     const invitationCredentials = selectedChat && `chat_id: ${selectedChat._id} | passcode: ${selectedChat.passcode}`;
 
     useEffect(() => {
@@ -146,6 +157,7 @@ export default function Chat({ selectedChat, isNotesView }) {
         setSelectedProfile(null);
         setImagePreview(null);
         fetchChatMedia();
+        fetchChatAdmins();
 
         setMembers(selectedChat.members.length);
 
@@ -405,7 +417,7 @@ export default function Chat({ selectedChat, isNotesView }) {
                                         {chatMedia.length > 0 ? (
                                             <div className="grid grid-cols-2 gap-2">
                                                 {chatMedia.map((image) => (
-                                                    <div onClick={() => {setImagePreview(image)}} key={image._id} className="w-full aspect-[1/1] overflow-hidden rounded-lg">
+                                                    <div onClick={() => { setImagePreview(image) }} key={image._id} className="w-full aspect-[1/1] overflow-hidden rounded-lg">
                                                         <img
                                                             src={image.url}
                                                             alt="chat media"
@@ -508,6 +520,7 @@ export default function Chat({ selectedChat, isNotesView }) {
                                         <div className='flex flex-col pl-6 pr-3 overflow-y-auto max-h-48 custom-scrollbar'>
                                             {chatMembers && chatMembers.map((member) => {
                                                 const isMe = member._id === user._id;
+                                                const isAdmin = admins?.some(admin => (typeof admin === 'string' ? admin === member._id : admin._id === member._id));
                                                 return <div onClick={() => { setGroupInfo(false); setSelectedProfile(member); }} key={member._id} className='p-3 flex gap-3 items-center justify-baseline cursor-pointer duration-200 ease-in-out hover:bg-myback2 rounded-xl'>
                                                     {member.profileImage ? (
                                                         <img src={member.profileImage.url} alt="Profile" className="w-10 h-10 object-cover rounded-full mr-2" />
@@ -517,6 +530,9 @@ export default function Chat({ selectedChat, isNotesView }) {
                                                         </div>
                                                     )}
                                                     {isMe ? (<p>Me</p>) : (<p>{member.username}</p>)}
+                                                    {isAdmin && <div className="text-sm text-white ml-1 border-2 p-1 pl-3 pr-3 rounded-3xl">
+                                                        admin
+                                                    </div>}
                                                 </div>;
                                             })}
                                         </div>

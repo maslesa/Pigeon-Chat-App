@@ -294,6 +294,33 @@ const fetchAllChatMedia = async(req, res) => {
     }
 }
 
+const fetchChatAdmins = async(req, res) => {
+    try {
+        const chatId = req.params.chatId;
+        const chat = await Chat.findById(chatId);
+
+        if(!chat){
+            return res.status(404).json({
+                success: false,
+                message: 'chat with that id not found'
+            })
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'admins found successfully',
+            admins: chat.admins
+        })
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: 'Something went wrong',
+        });
+    }
+}
+
 
 
 module.exports = {
@@ -305,4 +332,5 @@ module.exports = {
     fetchMembers,
     changeTitle,
     fetchAllChatMedia,
+    fetchChatAdmins,
 }
