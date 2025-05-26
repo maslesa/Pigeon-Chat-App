@@ -47,6 +47,7 @@ export default function Chat({ selectedChat, isNotesView }) {
     const [chatMediaView, setChatMediaView] = useState(false);
 
     const [admins, setAdmins] = useState([]);
+    const [chatUserInfo, setChatUserInfo] = useState(null);
 
     const handleLeaveSuccess = () => {
         if (typeof window.updateChatList === 'function') {
@@ -134,6 +135,17 @@ export default function Chat({ selectedChat, isNotesView }) {
         }
     }
 
+    const kickUserFromChat = async (kickedUser) => {
+        try {
+            await axios.put(`http://localhost:5000/chat/kick-user/${selectedChat._id}`, { userId: kickedUser._id }, axiosConfig);
+            setAlert({ message: `${kickedUser.username} kicked from ${selectedChat.title}`, duration: 1000 });
+            setMembers(members - 1);
+            fetchChatMembers();
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     const invitationCredentials = selectedChat && `chat_id: ${selectedChat._id} | passcode: ${selectedChat.passcode}`;
 
     useEffect(() => {
@@ -158,6 +170,7 @@ export default function Chat({ selectedChat, isNotesView }) {
         setImagePreview(null);
         fetchChatMedia();
         fetchChatAdmins();
+        setChatUserInfo(null);
 
         setMembers(selectedChat.members.length);
 
@@ -189,6 +202,14 @@ export default function Chat({ selectedChat, isNotesView }) {
     });
 
     const sendMessage = async () => {
+        if (!selectedChat?.members?.some(member => member._id === user._id)) {
+            setAlert({ message: "You are no longer a member of this chat.", isError: true, duration: 2000 });
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+            return;
+        }
+
         if (!message.trim() && !image) return;
 
         let base64 = null;
@@ -379,10 +400,10 @@ export default function Chat({ selectedChat, isNotesView }) {
                             </div>
                         )}
                         {selectedChat && selectedProfile && (
-                            <div onClick={() => setSelectedProfile(null)} className='absolute flex w-full h-full bg-myback250 z-50 font-roboto text-white'>
+                            <div onClick={() => { setSelectedProfile(null); setGroupInfo(true); }} className='absolute flex w-full h-full bg-myback250 z-50 font-roboto text-white'>
                                 <div onClick={(e) => e.stopPropagation()} className='w-1/3 h-full bg-myback absolute right-0'>
                                     <div className='pl-5 flex gap-5 justify-baseline items-center w-full h-1/12'>
-                                        <img onClick={() => setSelectedProfile(null)} className='w-5 cursor-pointer duration-200 ease-in-out hover:scale-105' src="/close.png" alt="close" />
+                                        <img onClick={() => { setSelectedProfile(null); setGroupInfo(true); }} className='w-5 cursor-pointer duration-200 ease-in-out hover:scale-105' src="/close.png" alt="close" />
                                         <p className='font-semibold text-xl'>User info</p>
                                     </div>
                                     <div className='w-full h-1/2 bg-white flex justify-center items-center'>
@@ -402,11 +423,11 @@ export default function Chat({ selectedChat, isNotesView }) {
                             </div>
                         )}
                         {chatMediaView && selectedChat && (
-                            <div onClick={() => setChatMediaView(false)} className="flex justify-center items-center absolute top-1/2 left-1/2 w-full h-full transform -translate-x-1/2 -translate-y-1/2 bg-myback250 z-150">
+                            <div onClick={() => { setChatMediaView(false); setGroupInfo(true); }} className="flex justify-center items-center absolute top-1/2 left-1/2 w-full h-full transform -translate-x-1/2 -translate-y-1/2 bg-myback250 z-150">
                                 <div onClick={(e) => e.stopPropagation()} className="w-1/3 h-full absolute right-0 bg-myback flex flex-col font-roboto text-white">
                                     <div className="pl-5 flex gap-5 items-center w-full h-1/12">
                                         <img
-                                            onClick={() => setChatMediaView(false)}
+                                            onClick={() => { setChatMediaView(false); setGroupInfo(true); }}
                                             className="w-5 cursor-pointer duration-200 ease-in-out hover:scale-105"
                                             src="/close.png"
                                             alt="close"
@@ -521,18 +542,43 @@ export default function Chat({ selectedChat, isNotesView }) {
                                             {chatMembers && chatMembers.map((member) => {
                                                 const isMe = member._id === user._id;
                                                 const isAdmin = admins?.some(admin => (typeof admin === 'string' ? admin === member._id : admin._id === member._id));
-                                                return <div onClick={() => { setGroupInfo(false); setSelectedProfile(member); }} key={member._id} className='p-3 flex gap-3 items-center justify-baseline cursor-pointer duration-200 ease-in-out hover:bg-myback2 rounded-xl'>
-                                                    {member.profileImage ? (
-                                                        <img src={member.profileImage.url} alt="Profile" className="w-10 h-10 object-cover rounded-full mr-2" />
-                                                    ) : (
-                                                        <div className='bg-white w-10 h-10 rounded-full flex items-center justify-center text-myback2 text-xl font-semibold'>
-                                                            {member.nameSurname[0]}
+                                                const isUserAdmin = admins?.some(admin => typeof admin === 'string' ? admin === user._id : admin._id === user._id);
+                                                return <div onClick={() => { setGroupInfo(false); setSelectedProfile(member); setChatUserInfo(null); }} key={member._id} className='p-3 flex gap-3 items-center justify-between cursor-pointer duration-200 ease-in-out hover:bg-myback2 rounded-xl'>
+                                                    <div className='flex justify-baseline items-center gap-3'>
+                                                        {member.profileImage ? (
+                                                            <img src={member.profileImage.url} alt="Profile" className="w-10 h-10 object-cover rounded-full mr-2" />
+                                                        ) : (
+                                                            <div className='bg-white w-10 h-10 rounded-full flex items-center justify-center text-myback2 text-xl font-semibold'>
+                                                                {member.nameSurname[0]}
+                                                            </div>
+                                                        )}
+                                                        {isMe ? (<p>Me</p>) : (<p>{member.username}</p>)}
+                                                        {isAdmin && <div className="text-sm text-white ml-1 border-2 p-1 pl-3 pr-3 rounded-3xl">
+                                                            admin
+                                                        </div>}
+                                                    </div>
+                                                    {!isMe && isUserAdmin && (
+                                                        <div onClick={(e) => { e.stopPropagation(); setChatUserInfo(chatUserInfo?._id === member._id ? null : member); }} className={`relative flex justify-center items-center w-10 h-10 rounded-full duration-200 ease-in-out hover:bg-myback ${chatUserInfo && chatUserInfo._id == member._id && 'bg-myback2'}`}>
+                                                            <img className='w-5' src="/more.png" alt="" />
+                                                            {chatUserInfo && chatUserInfo._id == member._id && (
+                                                                <div className='absolute right-12 rounded-xl w-45 h-45 bg-myback border-2 border-myback2 z-10 flex flex-col gap-2 p-2'>
+                                                                    <div onClick={() => { setSelectedProfile(member); setGroupInfo(false); }} className='w-full h-1/3 flex items-center justify-baseline gap-1 p-2 duration-200 ease-in-out bg-myback hover:bg-myback2 rounded-lg'>
+                                                                        <img className='w-5' src="/login.png" alt="userinfo" />
+                                                                        <p className='font-roboto text-white text-lg'>User info</p>
+                                                                    </div>
+                                                                    <div onClick={() => setSelectedProfile(member)} className='w-full h-1/3 flex items-center justify-baseline gap-1 p-2 duration-200 ease-in-out bg-myback hover:bg-myback2 rounded-lg'>
+                                                                        <img className='w-5' src="/admin.png" alt="userinfo" />
+                                                                        <p className='font-roboto text-lg text-white'>Add as admin</p>
+                                                                    </div>
+                                                                    <div onClick={() => { kickUserFromChat(member); setChatUserInfo(null); }} className='w-full h-1/3 flex items-center justify-baseline gap-1 p-2 duration-200 ease-in-out bg-myback hover:bg-myback2 rounded-lg'>
+                                                                        <img className='w-5' src="/kick.png" alt="userinfo" />
+                                                                        <p className='font-roboto text-lg text-red-700'>Kick</p>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+
                                                         </div>
                                                     )}
-                                                    {isMe ? (<p>Me</p>) : (<p>{member.username}</p>)}
-                                                    {isAdmin && <div className="text-sm text-white ml-1 border-2 p-1 pl-3 pr-3 rounded-3xl">
-                                                        admin
-                                                    </div>}
                                                 </div>;
                                             })}
                                         </div>
@@ -661,50 +707,57 @@ export default function Chat({ selectedChat, isNotesView }) {
                                 ))}
                             </div>
                         </div>
-                        <div className="w-full h-1/7 flex gap-5 justify-center items-center relative">
-                            <input
-                                type="file"
-                                accept="image/*"
-                                ref={imageRef}
-                                className="hidden"
-                                onChange={(e) => {
-                                    if (e.target.files.length > 0) {
-                                        setImage(e.target.files[0]);
-                                    }
-                                }}
-                            />
-                            <div onClick={() => imageRef.current.click()} className="cursor-pointer duration-200 ease-in-out hover:scale-110 bg-myback2 p-3 rounded-2xl hover:bg-myback">
-                                <img className="w-5" src="/link.png" alt="" />
-                            </div>
-                            {image && (
-                                <div className="w-2/3 flex justify-baseline items-baseline mb-2 absolute bottom-20">
-                                    <img
-                                        src={URL.createObjectURL(image)}
-                                        alt="preview"
-                                        className="max-h-18 rounded-lg object-contain"
-                                    />
-                                    <div onClick={() => setImage(null)} className='bg-myback p-2 absolute top-1 left-19 cursor-pointer rounded-full'>
-                                        <img className='w-3' src="/closeimg.png" alt="closeimage" />
-                                    </div>
+                        {chatMembers && chatMembers.some(member => member._id === user._id) ? (
+                            <div className="w-full h-1/7 flex gap-5 justify-center items-center relative">
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    ref={imageRef}
+                                    className="hidden"
+                                    onChange={(e) => {
+                                        if (e.target.files.length > 0) {
+                                            setImage(e.target.files[0]);
+                                        }
+                                    }}
+                                />
+                                <div onClick={() => imageRef.current.click()} className="cursor-pointer duration-200 ease-in-out hover:scale-110 bg-myback2 p-3 rounded-2xl hover:bg-myback">
+                                    <img className="w-5" src="/link.png" alt="" />
                                 </div>
-                            )}
-                            <input
-                                className="w-2/3 h-1/2 border-2 border-white rounded-xl outline-0 font-roboto pl-5 pr-5 items-center text-white bg-myback2 duration-200 ease-in-out focus:bg-myback"
-                                autoComplete="off"
-                                type="text"
-                                placeholder="Enter a message"
-                                value={message}
-                                onChange={(e) => setMessage(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        sendMessage();
-                                    }
-                                }}
-                            />
-                            <div onClick={sendMessage} className="cursor-pointer duration-200 ease-in-out hover:scale-110 bg-myback2 p-3 rounded-full hover:bg-myback">
-                                <img className="w-5" src="/send.png" alt="" />
+                                {image && (
+                                    <div className="w-2/3 flex justify-baseline items-baseline mb-2 absolute bottom-20">
+                                        <img
+                                            src={URL.createObjectURL(image)}
+                                            alt="preview"
+                                            className="max-h-18 rounded-lg object-contain"
+                                        />
+                                        <div onClick={() => setImage(null)} className='bg-myback p-2 absolute top-1 left-19 cursor-pointer rounded-full'>
+                                            <img className='w-3' src="/closeimg.png" alt="closeimage" />
+                                        </div>
+                                    </div>
+                                )}
+                                <input
+                                    className="w-2/3 h-1/2 border-2 border-white rounded-xl outline-0 font-roboto pl-5 pr-5 items-center text-white bg-myback2 duration-200 ease-in-out focus:bg-myback"
+                                    autoComplete="off"
+                                    type="text"
+                                    placeholder="Enter a message"
+                                    value={message}
+                                    onChange={(e) => setMessage(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            sendMessage();
+                                        }
+                                    }}
+                                />
+                                <div onClick={sendMessage} className="cursor-pointer duration-200 ease-in-out hover:scale-110 bg-myback2 p-3 rounded-full hover:bg-myback">
+                                    <img className="w-5" src="/send.png" alt="" />
+                                </div>
                             </div>
-                        </div>
+                        ) : (
+                            <div className="w-full h-1/7 flex justify-center items-center relative">
+                                <p className='font-roboto text-white text-xl'>You are not a member of this chat anymore!</p>
+                            </div>
+                        )}
+
                     </>
                 )}
             </div>

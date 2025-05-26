@@ -1,5 +1,6 @@
 const Chat = require('../models/Chat');
 const Message = require('../models/Message');
+const User = require('../models/User');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const { createMessage } = require('./message-controller');
@@ -321,6 +322,49 @@ const fetchChatAdmins = async(req, res) => {
     }
 }
 
+const kickUserFromChat = async(req, res) => {
+    try {
+        const io = req.app.get('io');
+        const chatId = req.params.chatId;
+        const chat = await Chat.findById(chatId);
+        const {userId} = req.body;
+        const user = await User.findById(userId);
+
+        if(!chat){
+            return res.status(404).json({
+                success: false,
+                message: 'chat with that id not found'
+            })
+        }
+
+        if(!user){
+            return res.status(404).json({
+                success: false,
+                message: 'user with that id not found'
+            })
+        }
+
+        chat.members.pull(userId);
+        chat.admins.pull(userId);
+        await chat.save();
+
+        io.to(userId).emit('kickedFromChat', { chatId });
+        io.to(chatId).emit('updateMembers', chat.members.length);
+
+        res.status(200).json({
+            success: true,
+            message: 'user kicked successfully',
+        })
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: 'Something went wrong',
+        });
+    }
+}
+
 
 
 module.exports = {
@@ -333,4 +377,5 @@ module.exports = {
     changeTitle,
     fetchAllChatMedia,
     fetchChatAdmins,
+    kickUserFromChat,
 }
