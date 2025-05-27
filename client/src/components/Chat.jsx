@@ -212,14 +212,6 @@ export default function Chat({ selectedChat, isNotesView }) {
     });
 
     const sendMessage = async () => {
-        if (!selectedChat?.members?.some(member => member._id === user._id)) {
-            setAlert({ message: "You are no longer a member of this chat.", isError: true, duration: 2000 });
-            setTimeout(() => {
-                window.location.reload();
-            }, 2000);
-            return;
-        }
-
         if (!message.trim() && !image) return;
 
         let base64 = null;
