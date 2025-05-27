@@ -268,12 +268,12 @@ const changeTitle = async (req, res) => {
     }
 }
 
-const fetchAllChatMedia = async(req, res) => {
+const fetchAllChatMedia = async (req, res) => {
     try {
         const chatId = req.params.chatId;
         const chat = await Chat.findById(chatId).populate('images');
 
-        if(!chat){
+        if (!chat) {
             return res.status(404).json({
                 success: false,
                 message: 'chat with that id not found'
@@ -295,12 +295,12 @@ const fetchAllChatMedia = async(req, res) => {
     }
 }
 
-const fetchChatAdmins = async(req, res) => {
+const fetchChatAdmins = async (req, res) => {
     try {
         const chatId = req.params.chatId;
         const chat = await Chat.findById(chatId);
 
-        if(!chat){
+        if (!chat) {
             return res.status(404).json({
                 success: false,
                 message: 'chat with that id not found'
@@ -322,22 +322,22 @@ const fetchChatAdmins = async(req, res) => {
     }
 }
 
-const kickUserFromChat = async(req, res) => {
+const kickUserFromChat = async (req, res) => {
     try {
         const io = req.app.get('io');
         const chatId = req.params.chatId;
         const chat = await Chat.findById(chatId);
-        const {userId} = req.body;
+        const { userId } = req.body;
         const user = await User.findById(userId);
 
-        if(!chat){
+        if (!chat) {
             return res.status(404).json({
                 success: false,
                 message: 'chat with that id not found'
             })
         }
 
-        if(!user){
+        if (!user) {
             return res.status(404).json({
                 success: false,
                 message: 'user with that id not found'
@@ -365,6 +365,56 @@ const kickUserFromChat = async(req, res) => {
     }
 }
 
+const addUserAsAdmin = async (req, res) => {
+    try {
+        const chatId = req.params.chatId;
+        const { newAdminId } = req.body;
+
+        const chat = await Chat.findById(chatId);
+        const newAdmin = await User.findById(newAdminId);
+        if (!chat) {
+            return res.status(404).json({
+                success: false,
+                message: 'chat with that id not found'
+            })
+        }
+
+        if (!newAdmin) {
+            return res.status(404).json({
+                success: false,
+                message: 'user with that id not found'
+            })
+        }
+
+        const updatedChat = await Chat.findByIdAndUpdate(
+            chatId,
+            {$addToSet : {admins : newAdminId}},
+            {new: true}
+        ).populate('admins');
+
+        if(!updatedChat){
+            return res.status(400).json({
+                success: false, 
+                message: 'error updating chat while adding new admin'
+            })
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'new admin added successfully',
+            updatedChat: updatedChat
+        })
+
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: 'Something went wrong',
+        });
+    }
+}
+
 
 
 module.exports = {
@@ -378,4 +428,5 @@ module.exports = {
     fetchAllChatMedia,
     fetchChatAdmins,
     kickUserFromChat,
+    addUserAsAdmin,
 }
