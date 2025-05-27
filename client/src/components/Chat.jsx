@@ -549,56 +549,67 @@ export default function Chat({ selectedChat, isNotesView }) {
                                             <p className='text-lg font-medium cursor-pointer'>Members ( {members} ) </p>
                                         </div>
                                         <div className='flex flex-col pl-6 pr-3 overflow-y-auto max-h-48 custom-scrollbar'>
-                                            {chatMembers && chatMembers.map((member) => {
-                                                const isMe = member._id === user._id;
-                                                const isAdmin = admins?.some(admin => (typeof admin === 'string' ? admin === member._id : admin._id === member._id));
-                                                const isUserAdmin = admins?.some(admin => typeof admin === 'string' ? admin === user._id : admin._id === user._id);
-                                                return <div onClick={() => { setGroupInfo(false); setSelectedProfile(member); setChatUserInfo(null); }} key={member._id} className='p-3 flex gap-3 items-center justify-between cursor-pointer duration-200 ease-in-out hover:bg-myback2 rounded-xl'>
-                                                    <div className='flex justify-baseline items-center gap-3'>
-                                                        {member.profileImage ? (
-                                                            <img src={member.profileImage.url} alt="Profile" className="w-10 h-10 object-cover rounded-full mr-2" />
-                                                        ) : (
-                                                            <div className='bg-white w-10 h-10 rounded-full flex items-center justify-center text-myback2 text-xl font-semibold'>
-                                                                {member.nameSurname[0]}
-                                                            </div>
-                                                        )}
-                                                        {isMe ? (<p>Me</p>) : (<p>{member.username}</p>)}
-                                                        {isAdmin && <div className="text-sm text-white ml-1 border-2 p-1 pl-3 pr-3 rounded-3xl">
-                                                            admin
-                                                        </div>}
-                                                    </div>
-                                                    {!isMe && isUserAdmin && (
-                                                        <div
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setChatUserInfo(chatUserInfo?._id === member._id ? null : member);
-                                                            }}
-                                                            className={`relative flex justify-center items-center w-10 h-10 rounded-full duration-200 ease-in-out hover:bg-myback ${chatUserInfo && chatUserInfo._id === member._id && 'bg-myback2'
-                                                                }`}
-                                                        >
-                                                            <img className="w-5" src="/more.png" alt="" />
-                                                            {chatUserInfo && chatUserInfo._id === member._id && (
-                                                                <div className={`absolute right-12 rounded-xl w-45 ${isAdmin ? 'h-30' : 'h-45'} bg-myback border-2 border-myback2 z-10 flex flex-col gap-2 p-2`}>
-                                                                    <div onClick={() => { setSelectedProfile(member); setGroupInfo(false); }} className={`w-full ${isAdmin ? 'h-1/2' : 'h-1/3'} flex items-center justify-baseline gap-1 p-2 duration-200 ease-in-out bg-myback hover:bg-myback2 rounded-lg`}>
-                                                                        <img className="w-5" src="/login.png" alt="userinfo" />
-                                                                        <p className="font-roboto text-white text-lg">User info</p>
-                                                                    </div>
-                                                                    {!isAdmin && (
-                                                                        <div onClick={() => addUserAsAdmin(member)} className="w-full h-1/3 flex items-center justify-baseline gap-1 p-2 duration-200 ease-in-out bg-myback hover:bg-myback2 rounded-lg">
-                                                                            <img className="w-5" src="/admin.png" alt="userinfo" />
-                                                                            <p className="font-roboto text-lg text-white">Add as admin</p>
+                                            {chatMembers &&
+                                                chatMembers
+                                                    .slice()
+                                                    .sort((a, b) => {
+                                                        const getPriority = (member) => {
+                                                            if (member._id === user._id) return 0;
+                                                            if (admins?.some(admin => (typeof admin === 'string' ? admin === member._id : admin._id === member._id))) return 1;
+                                                            return 2;
+                                                        };
+                                                        return getPriority(a) - getPriority(b);
+                                                    })
+                                                    .map((member) => {
+                                                        const isMe = member._id === user._id;
+                                                        const isAdmin = admins?.some(admin => (typeof admin === 'string' ? admin === member._id : admin._id === member._id));
+                                                        const isUserAdmin = admins?.some(admin => typeof admin === 'string' ? admin === user._id : admin._id === user._id);
+
+                                                        return (
+                                                            <div onClick={() => { setGroupInfo(false); setSelectedProfile(member); setChatUserInfo(null); }} key={member._id} className='p-3 flex gap-3 items-center justify-between cursor-pointer duration-200 ease-in-out hover:bg-myback2 rounded-xl'>
+                                                                <div className='flex justify-baseline items-center gap-3'>
+                                                                    {member.profileImage ? (
+                                                                        <img src={member.profileImage.url} alt="Profile" className="w-10 h-10 object-cover rounded-full mr-2" />
+                                                                    ) : (
+                                                                        <div className='bg-white w-10 h-10 rounded-full flex items-center justify-center text-myback2 text-xl font-semibold'>
+                                                                            {member.nameSurname[0]}
                                                                         </div>
                                                                     )}
-                                                                    <div onClick={() => { kickUserFromChat(member); setChatUserInfo(null); }} className={`w-full ${isAdmin ? 'h-1/2' : 'h-1/3'} flex items-center justify-baseline gap-1 p-2 duration-200 ease-in-out bg-myback hover:bg-myback2 rounded-lg`}>
-                                                                        <img className="w-5" src="/kick.png" alt="userinfo" />
-                                                                        <p className="font-roboto text-lg text-red-700">Kick</p>
-                                                                    </div>
+                                                                    <p>{isMe ? 'Me' : member.username}</p>
+                                                                    {isAdmin && (
+                                                                        <div className="text-sm text-white ml-1 border-2 p-1 pl-3 pr-3 rounded-3xl">
+                                                                            admin
+                                                                        </div>
+                                                                    )}
                                                                 </div>
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </div>;
-                                            })}
+
+                                                                {!isMe && isUserAdmin && (
+                                                                    <div onClick={(e) => { e.stopPropagation(); setChatUserInfo(chatUserInfo?._id === member._id ? null : member); }}
+                                                                        className={`relative flex justify-center items-center w-10 h-10 rounded-full duration-200 ease-in-out hover:bg-myback ${chatUserInfo && chatUserInfo._id === member._id ? 'bg-myback2' : ''}`}>
+                                                                        <img className="w-5" src="/more.png" alt="" />
+                                                                        {chatUserInfo && chatUserInfo._id === member._id && (
+                                                                            <div className={`absolute right-12 rounded-xl w-45 ${isAdmin ? 'h-30' : 'h-45'} bg-myback border-2 border-myback2 z-10 flex flex-col gap-2 p-2`}>
+                                                                                <div onClick={() => { setSelectedProfile(member); setGroupInfo(false); }} className={`w-full ${isAdmin ? 'h-1/2' : 'h-1/3'} flex items-center justify-baseline gap-1 p-2 duration-200 ease-in-out bg-myback hover:bg-myback2 rounded-lg`}>
+                                                                                    <img className="w-5" src="/login.png" alt="userinfo" />
+                                                                                    <p className="font-roboto text-white text-lg">User info</p>
+                                                                                </div>
+                                                                                {!isAdmin && (
+                                                                                    <div onClick={() => addUserAsAdmin(member)} className="w-full h-1/3 flex items-center justify-baseline gap-1 p-2 duration-200 ease-in-out bg-myback hover:bg-myback2 rounded-lg">
+                                                                                        <img className="w-5" src="/admin.png" alt="userinfo" />
+                                                                                        <p className="font-roboto text-lg text-white">Add as admin</p>
+                                                                                    </div>
+                                                                                )}
+                                                                                <div onClick={() => { kickUserFromChat(member); setChatUserInfo(null); }} className={`w-full ${isAdmin ? 'h-1/2' : 'h-1/3'} flex items-center justify-baseline gap-1 p-2 duration-200 ease-in-out bg-myback hover:bg-myback2 rounded-lg`}>
+                                                                                    <img className="w-5" src="/kick.png" alt="userinfo" />
+                                                                                    <p className="font-roboto text-lg text-red-700">Kick</p>
+                                                                                </div>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
                                         </div>
                                     </div>
                                 </div>
