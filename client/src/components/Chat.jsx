@@ -146,6 +146,16 @@ export default function Chat({ selectedChat, isNotesView }) {
         }
     }
 
+    const addUserAsAdmin = async (newAdmin) => {
+        try {
+            await axios.put(`http://localhost:5000/chat/add-admin/${selectedChat._id}`, { newAdminId: newAdmin._id }, axiosConfig);
+            setAlert({ message: `${newAdmin.username} added as admin in ${selectedChat.title}`, duration: 1000 });
+            fetchChatAdmins();
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     const invitationCredentials = selectedChat && `chat_id: ${selectedChat._id} | passcode: ${selectedChat.passcode}`;
 
     useEffect(() => {
@@ -558,25 +568,33 @@ export default function Chat({ selectedChat, isNotesView }) {
                                                         </div>}
                                                     </div>
                                                     {!isMe && isUserAdmin && (
-                                                        <div onClick={(e) => { e.stopPropagation(); setChatUserInfo(chatUserInfo?._id === member._id ? null : member); }} className={`relative flex justify-center items-center w-10 h-10 rounded-full duration-200 ease-in-out hover:bg-myback ${chatUserInfo && chatUserInfo._id == member._id && 'bg-myback2'}`}>
-                                                            <img className='w-5' src="/more.png" alt="" />
-                                                            {chatUserInfo && chatUserInfo._id == member._id && (
-                                                                <div className='absolute right-12 rounded-xl w-45 h-45 bg-myback border-2 border-myback2 z-10 flex flex-col gap-2 p-2'>
-                                                                    <div onClick={() => { setSelectedProfile(member); setGroupInfo(false); }} className='w-full h-1/3 flex items-center justify-baseline gap-1 p-2 duration-200 ease-in-out bg-myback hover:bg-myback2 rounded-lg'>
-                                                                        <img className='w-5' src="/login.png" alt="userinfo" />
-                                                                        <p className='font-roboto text-white text-lg'>User info</p>
+                                                        <div
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setChatUserInfo(chatUserInfo?._id === member._id ? null : member);
+                                                            }}
+                                                            className={`relative flex justify-center items-center w-10 h-10 rounded-full duration-200 ease-in-out hover:bg-myback ${chatUserInfo && chatUserInfo._id === member._id && 'bg-myback2'
+                                                                }`}
+                                                        >
+                                                            <img className="w-5" src="/more.png" alt="" />
+                                                            {chatUserInfo && chatUserInfo._id === member._id && (
+                                                                <div className={`absolute right-12 rounded-xl w-45 ${isAdmin ? 'h-30' : 'h-45'} bg-myback border-2 border-myback2 z-10 flex flex-col gap-2 p-2`}>
+                                                                    <div onClick={() => { setSelectedProfile(member); setGroupInfo(false); }} className={`w-full ${isAdmin ? 'h-1/2' : 'h-1/3'} flex items-center justify-baseline gap-1 p-2 duration-200 ease-in-out bg-myback hover:bg-myback2 rounded-lg`}>
+                                                                        <img className="w-5" src="/login.png" alt="userinfo" />
+                                                                        <p className="font-roboto text-white text-lg">User info</p>
                                                                     </div>
-                                                                    <div onClick={() => setSelectedProfile(member)} className='w-full h-1/3 flex items-center justify-baseline gap-1 p-2 duration-200 ease-in-out bg-myback hover:bg-myback2 rounded-lg'>
-                                                                        <img className='w-5' src="/admin.png" alt="userinfo" />
-                                                                        <p className='font-roboto text-lg text-white'>Add as admin</p>
-                                                                    </div>
-                                                                    <div onClick={() => { kickUserFromChat(member); setChatUserInfo(null); }} className='w-full h-1/3 flex items-center justify-baseline gap-1 p-2 duration-200 ease-in-out bg-myback hover:bg-myback2 rounded-lg'>
-                                                                        <img className='w-5' src="/kick.png" alt="userinfo" />
-                                                                        <p className='font-roboto text-lg text-red-700'>Kick</p>
+                                                                    {!isAdmin && (
+                                                                        <div onClick={() => addUserAsAdmin(member)} className="w-full h-1/3 flex items-center justify-baseline gap-1 p-2 duration-200 ease-in-out bg-myback hover:bg-myback2 rounded-lg">
+                                                                            <img className="w-5" src="/admin.png" alt="userinfo" />
+                                                                            <p className="font-roboto text-lg text-white">Add as admin</p>
+                                                                        </div>
+                                                                    )}
+                                                                    <div onClick={() => { kickUserFromChat(member); setChatUserInfo(null); }} className={`w-full ${isAdmin ? 'h-1/2' : 'h-1/3'} flex items-center justify-baseline gap-1 p-2 duration-200 ease-in-out bg-myback hover:bg-myback2 rounded-lg`}>
+                                                                        <img className="w-5" src="/kick.png" alt="userinfo" />
+                                                                        <p className="font-roboto text-lg text-red-700">Kick</p>
                                                                     </div>
                                                                 </div>
                                                             )}
-
                                                         </div>
                                                     )}
                                                 </div>;
