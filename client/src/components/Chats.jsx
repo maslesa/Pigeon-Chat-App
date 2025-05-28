@@ -33,6 +33,18 @@ export default function Chats({ selectedChat, setSelectedChat, setIsNotesView })
     const fileInputRef = useRef(null);
     const [profileImageURL, setProfileImageURL] = useState(user.profileImage?.url);
 
+    const [darkMode, setDarkMode] = useState(() =>
+        window.matchMedia('(prefers-color-scheme: dark)').matches
+    );
+
+    useEffect(() => {
+        if (darkMode) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    }, [darkMode]);
+
     const fetchChats = async () => {
         const res = await axios.get(`http://localhost:5000/chat/fetch-all`, axiosConfig);
 
@@ -196,9 +208,21 @@ export default function Chats({ selectedChat, setSelectedChat, setIsNotesView })
                             <img className='w-5' src="/password.png" alt="acc" />
                             <p>Security settings</p>
                         </div>
-                        <div className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
-                            <img className='w-5' src="/moon.png" alt="nightmode" />
-                            <p>Night mode</p>
+                        <div className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-between items-center gap-2 duration-200 ease-in-out hover:bg-myback2' onClick={() => setDarkMode(!darkMode)}>
+                            <div className='flex items-center gap-2'>
+                                <img className='w-5' src="/moon.png" alt="nightmode" />
+                                <p>Night mode</p>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={darkMode}
+                                    onChange={() => setDarkMode(!darkMode)}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-11 h-6 bg-gray-300 dark:bg-gray-600 rounded-full peer peer-checked:bg-blue-500 transition-all duration-200"></div>
+                                <span className="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full transition-all duration-200 peer-checked:translate-x-full"></span>
+                            </label>
                         </div>
                         <div onClick={() => { setUserMenu(false); setIsNotesView(true); setSelectedChat(null); }} className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
                             <img className='w-5' src="/thinking.png" alt="thinking" />
