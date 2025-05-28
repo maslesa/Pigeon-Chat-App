@@ -6,7 +6,7 @@ import Alert from './Alert';
 
 const socket = io('http://localhost:5000');
 
-export default function Chat({ selectedChat, isNotesView }) {
+export default function Chat({ selectedChat, isNotesView, isPidgeyView }) {
     const token = localStorage.getItem('token');
     const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
 
@@ -357,6 +357,46 @@ export default function Chat({ selectedChat, isNotesView }) {
                         autoComplete="off"
                         type="text"
                         placeholder="Enter new note"
+                        value={newNote}
+                        onChange={(e) => setNewNote(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                createNote();
+                            }
+                        }}
+                    />
+                    <div onClick={createNote} className="cursor-pointer duration-200 ease-in-out hover:scale-110 bg-myback2 p-3 rounded-full hover:bg-myback">
+                        <img className="w-5" src="/send.png" alt="" />
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    if (isPidgeyView) {
+        return (
+            <div className="flex flex-col max-h-screen flex-1 bg-myback2 justify-baseline items-center relative bg-cover bg-center" style={{ backgroundImage: "url('/background.png')" }} >
+                <div className='w-full bg-myback flex justify-between pl-10 pr-10'>
+                    <div className="h-20 flex gap-3 items-center justify-baseline shadow-lg">
+                        <div className="w-12 h-12 bg-white flex justify-center items-center rounded-full">
+                            <img className='w-6' src="/logo.png" alt="" />
+                        </div>
+                        <div className="flex flex-col h-15 justify-center font-roboto font-normal pt-1 text-white text-xl">
+                            <p>
+                                Pidgey AI
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div className="w-full h-6/7 overflow-y-hidden">
+
+                </div>
+                <div className="w-full h-1/7 flex gap-5 justify-center items-center">
+                    <input
+                        className="w-2/3 h-1/2 border-2 border-white rounded-xl outline-0 font-roboto pl-5 pr-5 items-center text-white bg-myback2 duration-200 ease-in-out focus:bg-myback"
+                        autoComplete="off"
+                        type="text"
+                        placeholder="Get in touch with Pidgey"
                         value={newNote}
                         onChange={(e) => setNewNote(e.target.value)}
                         onKeyDown={(e) => {

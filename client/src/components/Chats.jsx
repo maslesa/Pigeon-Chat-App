@@ -5,7 +5,7 @@ import JoinChat from "./JoinChat";
 import Alert from "./Alert";
 import { useNavigate } from 'react-router-dom'
 
-export default function Chats({ selectedChat, setSelectedChat, setIsNotesView }) {
+export default function Chats({ selectedChat, setSelectedChat, setIsNotesView, setIsPidgeyView }) {
 
     const navigate = useNavigate();
 
@@ -224,11 +224,11 @@ export default function Chats({ selectedChat, setSelectedChat, setIsNotesView })
                                 <span className="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full transition-all duration-200 peer-checked:translate-x-full"></span>
                             </label>
                         </div>
-                        <div onClick={() => { setUserMenu(false); setIsNotesView(true); setSelectedChat(null); }} className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
+                        <div onClick={() => { setUserMenu(false); setIsNotesView(true); setSelectedChat(null); setIsPidgeyView(false); }} className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-baseline items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
                             <img className='w-5' src="/thinking.png" alt="thinking" />
                             <p>My notes</p>
                         </div>
-                        <div className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-between items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
+                        <div onClick={() => { setUserMenu(false); setIsNotesView(false); setSelectedChat(null); setIsPidgeyView(true); }} className='w-full p-2 pl-3 rounded-lg cursor-pointer flex justify-between items-center gap-2 duration-200 ease-in-out hover:bg-myback2'>
                             <div className="flex gap-2">
                                 <img className='w-5' src="/logo.png" alt="thinking" />
                                 <p>Pidgey AI</p>
@@ -401,7 +401,7 @@ export default function Chats({ selectedChat, setSelectedChat, setIsNotesView })
                 {chats && chats.length > 0 ? (
                     chats.map((chat) => {
                         return (
-                            <div onClick={() => { setSelectedChat(chat); setIsNotesView(false) }} key={chat._id} className={`w-full min-h-21 flex items-center pl-3 gap-3 duration-200 ease-in-out cursor-pointer
+                            <div onClick={() => { setSelectedChat(chat); setIsNotesView(false); setIsPidgeyView(false); }} key={chat._id} className={`w-full min-h-21 flex items-center pl-3 gap-3 duration-200 ease-in-out cursor-pointer
                                                          rounded-2xl  ${selectedChat && selectedChat._id === chat._id ? 'bg-myback2' : 'hover:bg-black50'}`}>
                                 <div className="min-w-13 h-13 bg-white flex justify-center items-center rounded-full">
                                     {chat.backgroundImage ? (
