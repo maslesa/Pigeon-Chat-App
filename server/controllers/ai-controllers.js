@@ -1,6 +1,9 @@
 const AIMessage = require('../models/AIMessages');
 const User = require('../models/User');
 
+const { OpenAI } = require('openai');
+const openai = new OpenAI({ apiKey: process.env.PIDGEY_OPENAI_KEY });
+
 const sendAIMessage = async (req, res) => {
     try {
         const userId = req.userInfo.id;
@@ -15,19 +18,34 @@ const sendAIMessage = async (req, res) => {
 
         const { messageBody } = req.body;
 
-        const newAIMessage = new AIMessage({
+        const userMessage = new AIMessage({
             user: userId,
             body: messageBody,
             isAI: false,
         });
+        await userMessage.save();
 
-        await newAIMessage.save();
+        const aiResponse = await openai.chat.completions.create({
+            model: 'gpt-3.5-turbo',
+            messages: [
+                { role: 'system', content: 'You are a helpful AI assistant called Pidgey. You are chatbot in chat app.' },
+                { role: 'user', content: messageBody }
+            ]
+        })
+        const aiText = aiResponse.choices[0].message.content;
+
+        const aiMessage = new AIMessage({
+            user: userId,
+            body: aiText,
+            isAI: true,
+        });
+        await aiMessage.save();
 
         return res.status(200).json({
             success: true,
-            message: 'message sent successfully',
-            aimessage: newAIMessage
-        })
+            message: 'message sent and ai responded successfully',
+            chat: [userMessage, aiMessage]
+        });
 
     } catch (error) {
         console.error(error);
