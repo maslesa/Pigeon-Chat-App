@@ -285,6 +285,25 @@ export default function Chat({ selectedChat, isNotesView, isPidgeyView }) {
         }
     }
 
+    const sendAIMessage = async () => {
+        if (!newAIMessage.trim()) return;
+        setNewAIMessage('');
+        try {
+            const res = await axios.post(
+                'http://localhost:5000/ai/send-message',
+                { messageBody: newAIMessage },
+                axiosConfig
+            );
+
+            if (res.data.success) {
+                const newMessages = res.data.chat;
+                setAIMessages(prev => [...prev, ...newMessages]);
+            }
+        } catch (error) {
+            console.error('Error sending AI message:', error);
+        }
+    };
+
     const groupedMessages = messages.reduce((acc, msg) => {
         const dateKey = formatDateHeader(msg.createdAt);
         if (!acc[dateKey]) acc[dateKey] = [];
@@ -312,6 +331,7 @@ export default function Chat({ selectedChat, isNotesView, isPidgeyView }) {
     };
 
     const createNote = async () => {
+        if (!newNote.trim()) return;
         try {
             const res = await axios.post(`http://localhost:5000/note/post`, { body: newNote }, axiosConfig);
             setNotes([...notes, res.data.note]);
@@ -334,6 +354,12 @@ export default function Chat({ selectedChat, isNotesView, isPidgeyView }) {
             fetchNotes();
         }
     }, [isNotesView]);
+
+    useEffect(() => {
+        if (isPidgeyView) {
+            fetchAIMessages();
+        }
+    }, [isPidgeyView]);
 
     if (isNotesView) {
 
@@ -400,12 +426,6 @@ export default function Chat({ selectedChat, isNotesView, isPidgeyView }) {
         )
     }
 
-    useEffect(() => {
-        if (isPidgeyView) {
-            fetchAIMessages();
-        }
-    }, [isPidgeyView]);
-
     if (isPidgeyView) {
         return (
             <div className="flex flex-col max-h-screen flex-1 bg-myback2 justify-baseline items-center relative bg-cover bg-center" style={{ backgroundImage: "url('/background.png')" }} >
@@ -453,8 +473,8 @@ export default function Chat({ selectedChat, isNotesView, isPidgeyView }) {
                                 ))}
                             </div>
                         ))}
+                        <div ref={aiEndRef} />
                     </div>
-                    <div ref={aiEndRef} />
                 </div>
                 <div className="w-full h-1/7 flex gap-5 justify-center items-center">
                     <input
@@ -462,15 +482,15 @@ export default function Chat({ selectedChat, isNotesView, isPidgeyView }) {
                         autoComplete="off"
                         type="text"
                         placeholder="Get in touch with Pidgey"
-                        value={newNote}
-                        onChange={(e) => setNewNote(e.target.value)}
+                        value={newAIMessage}
+                        onChange={(e) => setNewAIMessage(e.target.value)}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
-                                createNote();
+                                sendAIMessage();
                             }
                         }}
                     />
-                    <div onClick={createNote} className="cursor-pointer duration-200 ease-in-out hover:scale-110 bg-myback2 p-3 rounded-full hover:bg-myback">
+                    <div onClick={sendAIMessage} className="cursor-pointer duration-200 ease-in-out hover:scale-110 bg-myback2 p-3 rounded-full hover:bg-myback">
                         <img className="w-5" src="/send.png" alt="" />
                     </div>
                 </div>
