@@ -258,6 +258,33 @@ export default function Chat({ selectedChat, isNotesView, isPidgeyView }) {
         return date.getFullYear().toString();
     }
 
+    const [aiMessages, setAIMessages] = useState([]);
+    const [newAIMessage, setNewAIMessage] = useState('');
+
+    const aiEndRef = useRef(null);
+
+    useEffect(() => {
+        if (aiEndRef.current) {
+            aiEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [aiMessages]);
+
+    const groupedAIMessages = aiMessages.reduce((acc, msg) => {
+        const dateKey = formatDateHeader(msg.createdAt);
+        if (!acc[dateKey]) acc[dateKey] = [];
+        acc[dateKey].push(msg);
+        return acc;
+    }, {});
+
+    const fetchAIMessages = async () => {
+        try {
+            const res = await axios.get(`http://localhost:5000/ai/fetch-messages`, axiosConfig);
+            setAIMessages(res.data.chat);
+        } catch (error) {
+            console.error("Failed to fetch ai mesasges:", err);
+        }
+    }
+
     const groupedMessages = messages.reduce((acc, msg) => {
         const dateKey = formatDateHeader(msg.createdAt);
         if (!acc[dateKey]) acc[dateKey] = [];
@@ -373,6 +400,12 @@ export default function Chat({ selectedChat, isNotesView, isPidgeyView }) {
         )
     }
 
+    useEffect(() => {
+        if (isPidgeyView) {
+            fetchAIMessages();
+        }
+    }, [isPidgeyView]);
+
     if (isPidgeyView) {
         return (
             <div className="flex flex-col max-h-screen flex-1 bg-myback2 justify-baseline items-center relative bg-cover bg-center" style={{ backgroundImage: "url('/background.png')" }} >
@@ -389,7 +422,39 @@ export default function Chat({ selectedChat, isNotesView, isPidgeyView }) {
                     </div>
                 </div>
                 <div className="w-full h-6/7 overflow-y-hidden">
-
+                    <div className="p-4 flex flex-col gap-2 overflow-y-auto h-full custom-scrollbar">
+                        {Object.keys(groupedAIMessages).map((dateKey) => (
+                            <div key={dateKey} className="w-full">
+                                <div className="flex justify-center items-center my-4">
+                                    <span className="bg-gray-600 text-white text-xs px-5 py-1 rounded-full font-roboto">
+                                        {dateKey}
+                                    </span>
+                                </div>
+                                {groupedAIMessages[dateKey].map((msg) => (
+                                    <div
+                                        key={msg._id}
+                                        className={`flex ${msg.isAI ? 'justify-start' : 'justify-end'} mb-2`}
+                                    >
+                                        <div
+                                            className={`relative min-w-[150px] max-w-xs px-4 py-2 pr-20 rounded-2xl text-white text-sm shadow ${msg.isAI
+                                                ? 'bg-gray-700 rounded-bl-none'
+                                                : 'bg-blue-600 rounded-br-none'
+                                                }`}
+                                        >
+                                            <p>{msg.body}</p>
+                                            <div className="absolute bottom-1 right-3 text-white font-roboto text-[10px] opacity-80">
+                                                {new Date(msg.createdAt).toLocaleTimeString([], {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                })}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ))}
+                    </div>
+                    <div ref={aiEndRef} />
                 </div>
                 <div className="w-full h-1/7 flex gap-5 justify-center items-center">
                     <input
