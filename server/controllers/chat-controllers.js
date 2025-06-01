@@ -271,20 +271,30 @@ const changeTitle = async (req, res) => {
 const fetchAllChatMedia = async (req, res) => {
     try {
         const chatId = req.params.chatId;
-        const chat = await Chat.findById(chatId).populate('images');
+
+        const chat = await Chat.findById(chatId)
+            .populate({
+                path: 'images',
+                populate: {
+                    path: 'sentBy',
+                    populate: {
+                        path: 'profileImage'
+                    }
+                }
+            });
 
         if (!chat) {
             return res.status(404).json({
                 success: false,
                 message: 'chat with that id not found'
-            })
+            });
         }
 
         res.status(200).json({
             success: true,
             message: 'chat media fetched successfully',
             media: chat.images
-        })
+        });
 
     } catch (error) {
         console.error(error);
@@ -293,7 +303,7 @@ const fetchAllChatMedia = async (req, res) => {
             message: 'Something went wrong',
         });
     }
-}
+};
 
 const fetchChatAdmins = async (req, res) => {
     try {
@@ -388,13 +398,13 @@ const addUserAsAdmin = async (req, res) => {
 
         const updatedChat = await Chat.findByIdAndUpdate(
             chatId,
-            {$addToSet : {admins : newAdminId}},
-            {new: true}
+            { $addToSet: { admins: newAdminId } },
+            { new: true }
         ).populate('admins');
 
-        if(!updatedChat){
+        if (!updatedChat) {
             return res.status(400).json({
-                success: false, 
+                success: false,
                 message: 'error updating chat while adding new admin'
             })
         }

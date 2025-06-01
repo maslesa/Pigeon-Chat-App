@@ -60,10 +60,19 @@ const fetchAllMessages = async (req, res) => {
                 path: 'sentBy',
                 populate: {
                     path: 'profileImage',
-                    model: 'ProfileImage'
+                    model: 'ProfileImage',
                 }
             })
-            .populate('image')
+            .populate({
+                path: 'image',
+                populate: {
+                    path: 'sentBy',
+                    populate: {
+                        path: 'profileImage',
+                        model: 'ProfileImage',
+                    }
+                }
+            })
             .sort({ createdAt: 1 });
 
         res.status(200).json({
@@ -76,9 +85,9 @@ const fetchAllMessages = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'smt went wrong'
-        })
+        });
     }
-}
+};
 
 module.exports = {
     createMessage,

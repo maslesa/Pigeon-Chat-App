@@ -528,9 +528,23 @@ export default function Chat({ selectedChat, isNotesView, isPidgeyView }) {
                     <>
                         {imagePreview && (
                             <div onClick={() => setImagePreview(null)} className="absolute w-full h-full flex justify-center items-center z-200">
-                                <div className="absolute inset-0 bg-myback2 opacity-80"></div>
+                                <div className="absolute inset-0 bg-myback2 opacity-80 z-10"></div>
+                                <div className="absolute top-25 left-10 z-30 flex items-center">
+                                    {imagePreview.sentBy.profileImage ? (
+                                        <img
+                                            src={imagePreview.sentBy.profileImage.url}
+                                            alt="Profile"
+                                            className="w-12 h-12 object-cover rounded-full mr-2"
+                                        />
+                                    ) : (
+                                        <div className="bg-white w-10 h-10 rounded-full flex items-center justify-center text-myback2 text-xl font-semibold mr-2">
+                                            {imagePreview.sentBy.nameSurname?.[0]}
+                                        </div>
+                                    )}
+                                    <span className="text-white font-semibold">{imagePreview.sentBy.username}</span>
+                                </div>
                                 <img
-                                    className="w-80 z-30 opacity-100"
+                                    className="w-80 z-30 opacity-100 rounded-lg shadow-xl"
                                     src={imagePreview.url}
                                     alt="image"
                                 />
@@ -841,7 +855,7 @@ export default function Chat({ selectedChat, isNotesView, isPidgeyView }) {
                                                         </div>
                                                         <div className={`${isMe ? 'mt-0' : 'mt-1'}`}>
                                                             {msg.image && (
-                                                                <div onClick={() => setImagePreview(msg.image)} className='w-full cursor-pointer relative group m-2'>
+                                                                <div onClick={() => { setImagePreview(msg.image); console.log(msg.image); }} className='w-full cursor-pointer relative group m-2'>
                                                                     <div className='absolute inset-0 bg-myback2 bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-50 transition-opacity duration-300 rounded-xl'>
                                                                         <img className='w-10' src="/camera.png" alt="camera" />
                                                                     </div>
