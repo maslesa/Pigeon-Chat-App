@@ -287,17 +287,32 @@ export default function Chat({ selectedChat, isNotesView, isPidgeyView }) {
 
     const sendAIMessage = async () => {
         if (!newAIMessage.trim()) return;
+
+        const messageToSend = newAIMessage;
         setNewAIMessage('');
+
+        const tempUserMessage = {
+            _id: Date.now().toString(),
+            body: messageToSend,
+            isAI: false,
+            createdAt: new Date().toISOString(),
+        };
+        setAIMessages(prev => [...prev, tempUserMessage]);
+
         try {
             const res = await axios.post(
                 'http://localhost:5000/ai/send-message',
-                { messageBody: newAIMessage },
+                { messageBody: messageToSend },
                 axiosConfig
             );
 
             if (res.data.success) {
                 const newMessages = res.data.chat;
-                setAIMessages(prev => [...prev, ...newMessages]);
+
+                setAIMessages(prev => [
+                    ...prev.filter(msg => msg._id !== tempUserMessage._id),
+                    ...newMessages
+                ]);
             }
         } catch (error) {
             console.error('Error sending AI message:', error);
