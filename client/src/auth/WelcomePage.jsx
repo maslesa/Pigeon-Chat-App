@@ -11,7 +11,7 @@ export default function WelcomePage(){
                     <img className="w-50" src="/logo.png" alt="logo" />
                     <h1 className="font-roboto font-bold text-3xl text-white">Pigeon</h1>
                 </div>
-                <div className="flex gap-10">
+                <div className="hidden xl:flex gap-10">
                     <div onClick={() => navigate('/login')} className="flex gap-1 justify-center items-center border-4 border-white py-3 px-10 rounded-xl cursor-pointer duration-200 ease-in-out hover:scale-103">
                         <img className="w-8" src="/login.png" alt="login" />
                         <h4 className="font-roboto font-semibold text-lg text-white">Sign in</h4>
@@ -20,6 +20,9 @@ export default function WelcomePage(){
                         <img className="w-8" src="/register.png" alt="login" />
                         <h4 className="font-roboto font-semibold text-lg text-white">Sign up</h4>
                     </div>
+                </div>
+                <div className="flex xl:hidden items-center justify-center font-roboto text-white text-2xl">
+                    Currently not available for this device!
                 </div>
             </div>
         </div>
