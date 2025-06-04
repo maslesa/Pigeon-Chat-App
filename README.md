@@ -1,7 +1,6 @@
 # 🕊️ Pigeon Chat Application
 Pigeon is a real-time group chat application that enables users to communicate through messages and images, manage their profiles, interact with an AI chatbot, and collaborate in group chats with admin controls.
 Users can also create and manage personal notes directly within the app.
-Pigeon supports both dark and light mode for an optimal user experience.
 
 ## 🚧 Status
 **Development in Progress** – Core features are partially completed.
